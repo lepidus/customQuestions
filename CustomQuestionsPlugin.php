@@ -3,6 +3,7 @@
 namespace APP\plugins\generic\customQuestions;
 
 use PKP\plugins\GenericPlugin;
+use Illuminate\Database\Migrations\Migration;
 
 class CustomQuestionsPlugin extends GenericPlugin
 {
@@ -24,5 +25,10 @@ class CustomQuestionsPlugin extends GenericPlugin
     public function getDescription()
     {
         return __('plugins.generic.customQuestions.description');
+    }
+
+    public function getInstallMigration(): Migration
+    {
+        return new CustomQuestionsSchemaMigration();
     }
 }
