@@ -1,0 +1,4 @@
+.vscode/settings.json
+cypress/plugins/*
+cypress/screenshots/*
+cypress/videos/*

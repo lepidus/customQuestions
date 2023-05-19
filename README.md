@@ -1,6 +1,6 @@
 # Custom Questions
 
-This plugin makes it possible to add custom questions to the submission wizard.
+A plugin to add custom questions to submission wizard
 
 ## Compatibility
 
