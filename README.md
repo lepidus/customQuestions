@@ -1,0 +1,22 @@
+# Custom Questions
+
+This plugin makes it possible to add custom questions to the submission wizard.
+
+## Compatibility
+
+The latest release of this plugin is compatible with the following PKP applications:
+
+* OPS 3.4.0
+
+## Installation
+
+1. Enter the administration area of ​​your application and navigate to Settings > Website > Plugins > Upload a new plugin.
+2. Under Upload file select the file customQuestions.tar.gz.
+3. Click Save and the plugin will be installed on your website.
+
+# License
+__This plugin is licensed under the GNU General Public License v3.0__
+
+__Copyright (c) 2023 Lepidus Tecnologia__
+
+__Copyright (c) 2023 SciELO__
