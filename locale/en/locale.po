@@ -25,3 +25,39 @@ msgstr "Question"
 
 msgid "plugins.generic.customQuestions.create"
 msgstr "Create New Question"
+
+msgid "plugins.generic.customQuestions.changeType"
+msgstr "Changing the form item type..."
+
+msgid "plugins.generic.customQuestions.title"
+msgstr "Title"
+
+msgid "plugins.generic.customQuestions.questionDescription"
+msgstr "Description"
+
+msgid "plugins.generic.customQuestions.required"
+msgstr "Required to complete item"
+
+msgid "plugins.generic.customQuestions.questionType"
+msgstr "Question type"
+
+msgid "plugins.generic.customQuestions.chooseType"
+msgstr "Choose question type"
+
+msgid "plugins.generic.customQuestions.smalltextfield"
+msgstr "Single word text box"
+
+msgid "plugins.generic.customQuestions.textfield"
+msgstr "Single line text box"
+
+msgid "plugins.generic.customQuestions.textarea"
+msgstr "Extended text box"
+
+msgid "plugins.generic.customQuestions.checkboxes"
+msgstr "Checkboxes (you can choose one or more)"
+
+msgid "plugins.generic.customQuestions.radiobuttons"
+msgstr "Radio buttons (you can only choose one)"
+
+msgid "plugins.generic.customQuestions.dropdownbox"
+msgstr "Drop-down box"

@@ -10,7 +10,7 @@
             document.getElementById('customQuestionForm').addResponse.disabled = false;
         {rdelim} else {ldelim}
             if (document.getElementById('customQuestionForm').addResponse.disabled == false) {ldelim}
-            alert({translate|json_encode key="manager.reviewFormElement.changeType"});
+            alert({translate|json_encode key="plugins.generic.customQuestions.changeType"});
         {rdelim}
             document.getElementById('customQuestionForm').addResponse.disabled = true;
         {rdelim}
@@ -34,11 +34,11 @@
 
     {fbvFormArea id="customQuestionForm"}
 
-        {fbvFormSection title="manager.reviewFormElements.question" required=true for="question"}
-            {fbvElement type="textarea" id="question" value=$question multilingual=true rich=true}
+        {fbvFormSection title="plugins.generic.customQuestions.title" required=true for="title"}
+            {fbvElement type="textarea" id="title" value=$title multilingual=true rich=true}
         {/fbvFormSection}
 
-        {fbvFormSection title="manager.reviewFormElements.description" for="description"}
+        {fbvFormSection title="plugins.generic.customQuestions.questionDescription" for="description"}
             {fbvElement type="textarea" id="description" value=$description multilingual=true rich=true}
         {/fbvFormSection}
 
@@ -51,43 +51,28 @@
             {fbvElement
                 type="checkbox"
                 id="required"
-                label="manager.reviewFormElements.required"
+                label="plugins.generic.customQuestions.required"
                 checked=$checked
                 inline="true"
             }
         {/fbvFormSection}
 
-        {fbvFormSection for="included" list=true}
-            {if $included}
-                {assign var="checked" value=true}
-            {else}
-                {assign var="checked" value=false}
-            {/if}
-            {fbvElement
-                type="checkbox"
-                id="included"
-                label="manager.reviewFormElements.included"
-                checked=$checked
-                inline="true"
-            }
-        {/fbvFormSection}
-
-        {fbvFormSection for="elementType" list=true}
+        {fbvFormSection for="questionType" list=true}
             {fbvElement
                 type="select"
-                label="manager.reviewFormElements.elementType"
-                id="elementType"
+                label="plugins.generic.customQuestions.questionType"
+                id="questionType"
                 defaultLabel=""
                 from=$customQuestionTypeOptions
-                selected=$elementType
+                selected=$questionType
                 size=$fbvStyles.size.MEDIUM
                 required=true
             }
         {/fbvFormSection}
 
-        <div id="elementOptions" class="full left">
-            <div id="elementOptionsContainer" class="full left">
-                {capture assign=elementOptionsUrl}
+        <div id="questionOptions" class="full left">
+            <div id="questionOptionsContainer" class="full left">
+                {capture assign=questionOptionsUrl}
                     {url
                         router=\PKP\core\PKPApplication::ROUTE_COMPONENT
                         component="listbuilder.settings.reviewForms.ReviewFormElementResponseItemListbuilderHandler"
@@ -97,7 +82,7 @@
                         escape=false
                     }
                 {/capture}
-                {load_url_in_div id="elementOptionsListbuilderContainer" url=$elementOptionsUrl}
+                {load_url_in_div id="questionOptionsListbuilderContainer" url=$questionOptionsUrl}
             </div>
         </div>
         <p><span class="formRequired">{translate key="common.requiredField"}</span></p>

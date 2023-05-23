@@ -89,13 +89,13 @@ class CustomQuestion extends \PKP\core\DataObject
     public function getCustomQuestionTypeOptions(): array
     {
         return [
-            '' => 'manager.reviewFormElements.chooseType',
-            self::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD => 'manager.reviewFormElements.smalltextfield',
-            self::CUSTOM_QUESTION_TYPE_TEXT_FIELD => 'manager.reviewFormElements.textfield',
-            self::CUSTOM_QUESTION_TYPE_TEXTAREA => 'manager.reviewFormElements.textarea',
-            self::CUSTOM_QUESTION_TYPE_CHECKBOXES => 'manager.reviewFormElements.checkboxes',
-            self::CUSTOM_QUESTION_TYPE_RADIO_BUTTONS => 'manager.reviewFormElements.radiobuttons',
-            self::CUSTOM_QUESTION_TYPE_DROP_DOWN_BOX => 'manager.reviewFormElements.dropdownbox',
+            '' => 'plugins.generic.customQuestions.chooseType',
+            self::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD => 'plugins.generic.customQuestions.smalltextfield',
+            self::CUSTOM_QUESTION_TYPE_TEXT_FIELD => 'plugins.generic.customQuestions.textfield',
+            self::CUSTOM_QUESTION_TYPE_TEXTAREA => 'plugins.generic.customQuestions.textarea',
+            self::CUSTOM_QUESTION_TYPE_CHECKBOXES => 'plugins.generic.customQuestions.checkboxes',
+            self::CUSTOM_QUESTION_TYPE_RADIO_BUTTONS => 'plugins.generic.customQuestions.radiobuttons',
+            self::CUSTOM_QUESTION_TYPE_DROP_DOWN_BOX => 'plugins.generic.customQuestions.dropdownbox',
         ];
     }
 
