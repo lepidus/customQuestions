@@ -16,3 +16,12 @@ msgstr "Perguntas personalizadas"
 
 msgid "plugins.generic.customQuestions.description"
 msgstr "Um plugin para adicionar perguntas personalizadas ao fluxo de submissão"
+
+msgid "plugins.generic.customQuestions.questions"
+msgstr "Perguntas"
+
+msgid "plugins.generic.customQuestions.question"
+msgstr "Pergunta"
+
+msgid "plugins.generic.customQuestions.create"
+msgstr "Criar Nova Pergunta"

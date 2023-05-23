@@ -16,3 +16,12 @@ msgstr "Custom Questions"
 
 msgid "plugins.generic.customQuestions.description"
 msgstr "A plugin to add custom questions to submission wizard"
+
+msgid "plugins.generic.customQuestions.questions"
+msgstr "Questions"
+
+msgid "plugins.generic.customQuestions.question"
+msgstr "Question"
+
+msgid "plugins.generic.customQuestions.create"
+msgstr "Create New Question"
