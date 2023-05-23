@@ -8,7 +8,7 @@ use PKP\controllers\grid\GridHandler;
 use PKP\linkAction\request\AjaxModal;
 use PKP\security\authorization\ContextAccessPolicy;
 use PKP\security\authorization\PKPSiteAccessPolicy;
-use APP\plugins\generic\customQuestions\CustomQuestionForm;
+use APP\plugins\generic\customQuestions\controllers\grid\form\CustomQuestionForm;
 
 class CustomQuestionGridHandler extends GridHandler
 {
@@ -71,7 +71,6 @@ class CustomQuestionGridHandler extends GridHandler
         $customQuestionsPlugin = PluginRegistry::getPlugin('generic', 'customquestionsplugin');
         $template = $customQuestionsPlugin->getTemplateResource('customQuestionForm.tpl');
 
-        $customQuestionsPlugin->import('controllers.grid.form.CustomQuestionForm');
         $customQuestionForm = new CustomQuestionForm($template);
         $customQuestionForm->initData();
 
