@@ -5,8 +5,8 @@
 </script>
 
 <script type="text/javascript">
-    function togglePossibleResponses(newValue, multipleResponsesElementTypesString) {ldelim}
-        if (multipleResponsesElementTypesString.indexOf(';'+newValue+';') != -1) {ldelim}
+    function togglePossibleResponses(newValue, multipleResponsesQuestionTypesString) {ldelim}
+        if (multipleResponsesQuestionTypesString.indexOf(';'+newValue+';') != -1) {ldelim}
             document.getElementById('customQuestionForm').addResponse.disabled = false;
         {rdelim} else {ldelim}
             if (document.getElementById('customQuestionForm').addResponse.disabled == false) {ldelim}
@@ -78,7 +78,7 @@
                 label="manager.reviewFormElements.elementType"
                 id="elementType"
                 defaultLabel=""
-                from=$reviewFormElementTypeOptions
+                from=$customQuestionTypeOptions
                 selected=$elementType
                 size=$fbvStyles.size.MEDIUM
                 required=true
