@@ -1,0 +1,43 @@
+{
+	"title": "Custom Question",
+	"description": "A custom question to be added in submission wizard.",
+	"properties": {
+		"id": {
+			"type": "integer",
+			"readOnly": true
+		},
+		"title": {
+			"type": "string",
+			"multilingual": true
+		},
+		"description": {
+			"type": "string",
+			"multilingual": true,
+			"validation": [
+				"nullable"
+			]
+		},
+		"sequence": {
+			"type": "number"
+		},
+		"required": {
+			"type": "boolean",
+			"validation": [
+				"nullable"
+			]
+		},
+		"questionType": {
+			"type": "integer"
+		},
+		"possibleResponses": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			},
+			"multilingual": true,
+			"validation": [
+				"nullable"
+			]
+		}
+	}
+}
