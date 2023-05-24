@@ -23,15 +23,15 @@ class CustomQuestionForm extends Form
 
         $this->addCheck(new \PKP\form\validation\FormValidatorLocale(
             $this,
-            'question',
+            'title',
             'required',
-            'manager.reviewFormElements.form.questionRequired'
+            'plugins.generic.customQuestions.form.questionRequired'
         ));
         $this->addCheck(new \PKP\form\validation\FormValidator(
             $this,
-            'elementType',
+            'questionType',
             'required',
-            'manager.reviewFormElements.form.elementTypeRequired'
+            'plugins.generic.customQuestions.form.questionTypeRequired'
         ));
         $this->addCheck(new \PKP\form\validation\FormValidatorPost($this));
         $this->addCheck(new \PKP\form\validation\FormValidatorCSRF($this));
@@ -41,11 +41,19 @@ class CustomQuestionForm extends Form
     {
         $templateMgr = TemplateManager::getManager($request);
         $customQuestion = new CustomQuestion();
+        $multipleResponsesQuestionTypesString = ';'
+        . implode(';', $customQuestion->getMultipleResponsesQuestionTypes())
+        . ';';
         $templateMgr->assign([
             'multipleResponsesQuestionTypes' => $customQuestion->getMultipleResponsesQuestionTypes(),
-            'multipleResponsesQuestionTypesString' => ';' . implode(';', $customQuestion->getMultipleResponsesQuestionTypes()) . ';',
+            'multipleResponsesQuestionTypesString' => $multipleResponsesQuestionTypesString,
             'customQuestionTypeOptions' => $customQuestion->getCustomQuestionTypeOptions(),
         ]);
         return parent::fetch($request, $template, $display);
+    }
+
+    public function readInputData()
+    {
+        $this->readUserVars(['title', 'description', 'required', 'questionType', 'possibleResponses']);
     }
 }

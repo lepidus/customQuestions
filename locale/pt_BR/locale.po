@@ -61,3 +61,9 @@ msgstr "Botões rádio (permite escolher apenas uma opção)"
 
 msgid "plugins.generic.customQuestions.dropdownbox"
 msgstr "Menu dropdown"
+
+msgid "plugins.generic.customQuestions.form.questionRequired"
+msgstr "O título da pergunta é obrigatório."
+
+msgid "plugins.generic.customQuestions.form.questionTypeRequired"
+msgstr "É necessário definir o tipo da pergunta."

@@ -61,3 +61,9 @@ msgstr "Radio buttons (you can only choose one)"
 
 msgid "plugins.generic.customQuestions.dropdownbox"
 msgstr "Drop-down box"
+
+msgid "plugins.generic.customQuestions.form.questionRequired"
+msgstr "The title of question is required."
+
+msgid "plugins.generic.customQuestions.form.questionTypeRequired"
+msgstr "It's necessary to define the type of question."
