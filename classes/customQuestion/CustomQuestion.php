@@ -56,32 +56,32 @@ class CustomQuestion extends \PKP\core\DataObject
         $this->setData('required', $required);
     }
 
-    public function getTitle(string $locale): string
+    public function getTitle(?string $locale): string
     {
         return $this->getData('title', $locale);
     }
 
-    public function setTitle(string $title, string $locale): void
+    public function setTitle(string $title, ?string $locale): void
     {
-        $this->setData('title', $question, $locale);
+        $this->setData('title', $title, $locale);
     }
 
-    public function getDescription(string $locale): string
+    public function getDescription(?string $locale): string
     {
         return $this->getData('description', $locale);
     }
 
-    public function setDescription(string $description, string $locale): void
+    public function setDescription(string $description, ?string $locale): void
     {
         $this->setData('description', $description, $locale);
     }
 
-    public function getPossibleResponses(string $locale): string
+    public function getPossibleResponses(?string $locale): array
     {
         return $this->getData('possibleResponses', $locale);
     }
 
-    public function setPossibleResponses(string $possibleResponses, string $locale): void
+    public function setPossibleResponses(array $possibleResponses, ?string $locale): void
     {
         $this->setData('possibleResponses', $possibleResponses, $locale);
     }
