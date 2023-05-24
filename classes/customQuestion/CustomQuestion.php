@@ -16,14 +16,29 @@ class CustomQuestion extends \PKP\core\DataObject
         return $this->getLocalizedData('title');
     }
 
+    public function setLocalizedTitle(array $title): void
+    {
+        $this->setData('title', $title, null);
+    }
+
     public function getLocalizedDescription(): string
     {
         return $this->getLocalizedData('description');
     }
 
+    public function setLocalizedDescription(array $description): void
+    {
+        $this->setData('description', $description, null);
+    }
+
     public function getLocalizedPossibleResponses(): array
     {
         return $this->getLocalizedData('possibleResponses');
+    }
+
+    public function setLocalizedPossibleResponses(array $possibleResponses): void
+    {
+        $this->setData('possibleResponses', $possibleResponses, null);
     }
 
     public function getSequence(): float

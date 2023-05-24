@@ -2,8 +2,8 @@
 
 namespace APP\plugins\generic\customQuestions\tests\classes\customQuestion;
 
-use PKP\tests\PKPTestCase;
 use APP\plugins\generic\customQuestions\classes\customQuestion\CustomQuestion;
+use PKP\tests\PKPTestCase;
 
 class CustomQuestionTest extends PKPTestCase
 {
@@ -15,11 +15,9 @@ class CustomQuestionTest extends PKPTestCase
         $required = true;
         $seq = 1.0;
         $possibleResponses = [
-            'en' => [
-                'Test question possible response 1',
-                'Test question possible response 2',
-                'Test question possible response 3',
-            ]
+            'Test question possible response 1',
+            'Test question possible response 2',
+            'Test question possible response 3',
         ];
 
         $customQuestion = new CustomQuestion();
@@ -30,37 +28,44 @@ class CustomQuestionTest extends PKPTestCase
         $customQuestion->setSequence($seq);
         $customQuestion->setPossibleResponses($possibleResponses, null);
 
-        $this->assertEquals($title, $customQuestion->getTitle(null));
-        $this->assertEquals($description, $customQuestion->getDescription(null));
-        $this->assertEquals($questionType, $customQuestion->getQuestionType());
-        $this->assertEquals($required, $customQuestion->getRequired());
-        $this->assertEquals($seq, $customQuestion->getSequence());
-        $this->assertEquals($possibleResponses, $customQuestion->getPossibleResponses(null));
+        self::assertEquals($title, $customQuestion->getTitle(null));
+        self::assertEquals($description, $customQuestion->getDescription(null));
+        self::assertEquals($questionType, $customQuestion->getQuestionType());
+        self::assertEquals($required, $customQuestion->getRequired());
+        self::assertEquals($seq, $customQuestion->getSequence());
+        self::assertEquals($possibleResponses, $customQuestion->getPossibleResponses(null));
     }
 
-    public function testGetLocalizedData(): void
+    public function testLocalizedGettersAndSetters(): void
     {
-        $title = 'Test question title';
-        $description = 'Test question description';
+        $title = [
+            'en' => 'Test question title',
+        ];
+        $description = [
+            'en' => 'Test question description',
+        ];
+
         $possibleResponses = [
-            'Test question possible response 1',
-            'Test question possible response 2',
-            'Test question possible response 3',
+            'en' => [
+                'Test question possible response 1',
+                'Test question possible response 2',
+                'Test question possible response 3'
+            ]
         ];
 
         $customQuestion = new CustomQuestion();
-        $customQuestion->setTitle($title, 'en');
-        $customQuestion->setDescription($description, 'en');
-        $customQuestion->setPossibleResponses($possibleResponses, 'en');
-        $this->assertEquals($title, $customQuestion->getLocalizedTitle());
-        $this->assertEquals($description, $customQuestion->getLocalizedDescription());
-        $this->assertEquals($possibleResponses, $customQuestion->getLocalizedPossibleResponses());
+        $customQuestion->setLocalizedTitle($title);
+        $customQuestion->setLocalizedDescription($description);
+        $customQuestion->setLocalizedPossibleResponses($possibleResponses);
+        self::assertEquals($title['en'], $customQuestion->getLocalizedTitle());
+        self::assertEquals($description['en'], $customQuestion->getLocalizedDescription());
+        self::assertEquals($possibleResponses['en'], $customQuestion->getLocalizedPossibleResponses());
     }
 
     public function testGetCustomQuestionTypeOptions(): void
     {
         $customQuestion = new CustomQuestion();
-        $this->assertEquals([
+        self::assertEquals([
             '' => 'plugins.generic.customQuestions.chooseType',
             CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD => 'plugins.generic.customQuestions.smalltextfield',
             CustomQuestion::CUSTOM_QUESTION_TYPE_TEXT_FIELD => 'plugins.generic.customQuestions.textfield',
@@ -74,7 +79,7 @@ class CustomQuestionTest extends PKPTestCase
     public function testGetMultipleResponsesQuestionTypes(): void
     {
         $customQuestion = new CustomQuestion();
-        $this->assertEquals([
+        self::assertEquals([
             CustomQuestion::CUSTOM_QUESTION_TYPE_CHECKBOXES,
             CustomQuestion::CUSTOM_QUESTION_TYPE_RADIO_BUTTONS,
             CustomQuestion::CUSTOM_QUESTION_TYPE_DROP_DOWN_BOX,
