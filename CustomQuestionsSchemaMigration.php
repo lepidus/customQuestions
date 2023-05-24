@@ -23,7 +23,6 @@ class CustomQuestionsSchemaMigration extends Migration
             $table->string('locale', 14)->default('');
             $table->string('setting_name', 255);
             $table->longText('setting_value')->nullable();
-            $table->string('setting_type', 6)->comment('(bool|int|float|string|object)');
 
             $table->index(['custom_question_id'], 'custom_question_settings_id');
             $table->unique(['custom_question_id', 'locale', 'setting_name'], 'custom_question_settings_pkey');
