@@ -6,6 +6,7 @@ use PKP\linkAction\LinkAction;
 use PKP\controllers\grid\GridColumn;
 use PKP\controllers\grid\GridHandler;
 use PKP\linkAction\request\AjaxModal;
+use APP\notification\NotificationManager;
 use PKP\security\authorization\ContextAccessPolicy;
 use PKP\security\authorization\PKPSiteAccessPolicy;
 use APP\plugins\generic\customQuestions\controllers\grid\form\CustomQuestionForm;
@@ -17,7 +18,7 @@ class CustomQuestionGridHandler extends GridHandler
         parent::__construct();
         $this->addRoleAssignment(
             [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SITE_ADMIN],
-            ['fetchGrid', 'fetchRow', 'createCustomQuestion']
+            ['fetchGrid', 'fetchRow', 'createCustomQuestion', 'updateCustomQuestion']
         );
     }
 
@@ -66,14 +67,39 @@ class CustomQuestionGridHandler extends GridHandler
         $this->setTitle('plugins.generic.customQuestions.questions');
     }
 
-    public function createCustomQuestion(array $args, PKPRequest $request): JSONMessage
+    public function getCustomQuestionFormTemplate(): string
     {
         $customQuestionsPlugin = PluginRegistry::getPlugin('generic', 'customquestionsplugin');
-        $template = $customQuestionsPlugin->getTemplateResource('customQuestionForm.tpl');
+        return $customQuestionsPlugin->getTemplateResource('customQuestionForm.tpl');
+    }
 
+    public function createCustomQuestion(array $args, PKPRequest $request): JSONMessage
+    {
+        $template = $this->getCustomQuestionFormTemplate();
         $customQuestionForm = new CustomQuestionForm($template);
         $customQuestionForm->initData();
 
         return new JSONMessage(true, $customQuestionForm->fetch($request));
+    }
+
+    public function updateCustomQuestion(array $args, PKPRequest $request): JSONMessage
+    {
+        $customQuestionId = (int) $request->getUserVar('custonQuestionId');
+
+        $template = $this->getCustomQuestionFormTemplate();
+        $customQuestionForm = new CustomQuestionForm($template, $customQuestionId);
+        $customQuestionForm->readInputData();
+
+        if ($customQuestionForm->validate()) {
+            $customQuestionId = $customQuestionForm->execute();
+
+            $notificationMgr = new NotificationManager();
+            $user = $request->getUser();
+            $notificationMgr->createTrivialNotification($user->getId());
+
+            return \PKP\db\DAO::getDataChangedEvent($customQuestionId);
+        }
+
+        return new JSONMessage(false);
     }
 }
