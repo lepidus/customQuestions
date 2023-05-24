@@ -2,14 +2,12 @@
 
 namespace APP\plugins\generic\customQuestions\controllers\grid\form;
 
-use PKP\form\Form;
-use PKP\db\DAORegistry;
 use APP\core\Application;
-use PKP\security\Validation;
-use APP\template\TemplateManager;
-use PKP\reviewForm\ReviewFormElement;
-use PKP\controllers\listbuilder\ListbuilderHandler;
 use APP\plugins\generic\customQuestions\classes\customQuestion\CustomQuestion;
+use APP\template\TemplateManager;
+use PKP\controllers\listbuilder\ListbuilderHandler;
+use PKP\db\DAORegistry;
+use PKP\form\Form;
 
 class CustomQuestionForm extends Form
 {

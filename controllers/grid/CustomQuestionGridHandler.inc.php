@@ -1,15 +1,15 @@
 <?php
 
-use PKP\security\Role;
-use PKP\core\JSONMessage;
-use PKP\linkAction\LinkAction;
+use APP\notification\NotificationManager;
+use APP\plugins\generic\customQuestions\controllers\grid\form\CustomQuestionForm;
 use PKP\controllers\grid\GridColumn;
 use PKP\controllers\grid\GridHandler;
+use PKP\core\JSONMessage;
+use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
-use APP\notification\NotificationManager;
 use PKP\security\authorization\ContextAccessPolicy;
 use PKP\security\authorization\PKPSiteAccessPolicy;
-use APP\plugins\generic\customQuestions\controllers\grid\form\CustomQuestionForm;
+use PKP\security\Role;
 
 class CustomQuestionGridHandler extends GridHandler
 {

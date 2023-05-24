@@ -2,14 +2,14 @@
 
 namespace APP\plugins\generic\customQuestions;
 
-use PKP\plugins\Hook;
 use APP\core\Application;
+use APP\template\TemplateManager;
+use Illuminate\Database\Migrations\Migration;
 use PKP\core\JSONMessage;
 use PKP\linkAction\LinkAction;
-use PKP\plugins\GenericPlugin;
-use APP\template\TemplateManager;
 use PKP\linkAction\request\AjaxModal;
-use Illuminate\Database\Migrations\Migration;
+use PKP\plugins\GenericPlugin;
+use PKP\plugins\Hook;
 
 class CustomQuestionsPlugin extends GenericPlugin
 {
