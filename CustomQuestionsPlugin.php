@@ -4,6 +4,7 @@ namespace APP\plugins\generic\customQuestions;
 
 use APP\core\Application;
 use APP\plugins\generic\customQuestions\controllers\grid\CustomQuestionGridHandler;
+use APP\plugins\generic\customQuestions\controllers\listbuilder\CustomQuestionResponseItemListbuilderHandler;
 use APP\template\TemplateManager;
 use Illuminate\Database\Migrations\Migration;
 use PKP\core\JSONMessage;
@@ -70,6 +71,11 @@ class CustomQuestionsPlugin extends GenericPlugin
         $componentInstance = & $params[2];
         if ($component == 'plugins.generic.customQuestions.controllers.grid.CustomQuestionGridHandler') {
             $componentInstance = new CustomQuestionGridHandler();
+            return true;
+        }
+        $listbuilderHandlerClass = 'CustomQuestionResponseItemListbuilderHandler';
+        if ($component == 'plugins.generic.customQuestions.controllers.listbuilder.' . $listbuilderHandlerClass) {
+            $componentInstance = new CustomQuestionResponseItemListbuilderHandler();
             return true;
         }
         return false;
