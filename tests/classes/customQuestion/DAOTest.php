@@ -4,6 +4,7 @@ namespace APP\plugins\generic\customQuestions\tests\classes\customQuestion;
 
 use APP\plugins\generic\customQuestions\classes\customQuestion\CustomQuestion;
 use APP\plugins\generic\customQuestions\classes\customQuestion\DAO;
+use Illuminate\Support\Facades\DB;
 use PKP\plugins\Hook;
 use PKP\tests\DatabaseTestCase;
 
@@ -95,5 +96,34 @@ class DAOTest extends DatabaseTestCase
         $customQuestionDAO->delete($customQuestion);
         $fetchedCustomQuestion = $customQuestionDAO->get($insertedCustomQuestionId);
         self::assertNull($fetchedCustomQuestion);
+    }
+
+    public function testResequenceQuestions(): void
+    {
+        $customQuestionDAO = app(DAO::class);
+
+        $row = DB::table($customQuestionDAO->table)
+            ->orderBy('seq', 'desc')
+            ->first();
+
+        if (isset($row)) {
+            $lastSeq = $row->seq;
+        } else {
+            $firstCustomQuestion = $customQuestionDAO->newDataObject();
+            $firstCustomQuestion->setSequence(1.0);
+            $firstCustomQuestion->setQuestionType(CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD);
+            $customQuestionDAO->insert($firstCustomQuestion);
+            $lastSeq = $firstCustomQuestion->getSequence();
+        }
+
+        $customQuestion = $customQuestionDAO->newDataObject();
+        $customQuestion->setSequence(1.0);
+        $customQuestion->setQuestionType(CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD);
+        $customQuestionDAO->insert($customQuestion);
+
+        $customQuestionDAO->resequence();
+
+        $fetchedCustomQuestion = $customQuestionDAO->get($customQuestion->getId());
+        self::assertEquals(++$lastSeq, $fetchedCustomQuestion->getSequence());
     }
 }
