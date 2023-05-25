@@ -4,6 +4,7 @@ namespace APP\plugins\generic\customQuestions\classes\customQuestion;
 
 use Illuminate\Support\Facades\DB;
 use PKP\core\EntityDAO;
+use Illuminate\Support\LazyCollection;
 
 class DAO extends EntityDAO
 {
@@ -29,6 +30,18 @@ class DAO extends EntityDAO
             ->where($this->primaryKeyColumn, $id)
             ->first();
         return $row ? $this->fromRow($row) : null;
+    }
+
+    public function getAll(): LazyCollection
+    {
+        $rows = DB::table($this->table)
+            ->get();
+
+        return LazyCollection::make(function () use ($rows) {
+            foreach ($rows as $row) {
+                yield $row->custom_question_id = $this->fromRow($row);
+            }
+        });
     }
 
     public function insert(CustomQuestion $customQuestion): int
