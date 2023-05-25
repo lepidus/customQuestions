@@ -2,3 +2,5 @@
 cypress/plugins/*
 cypress/screenshots/*
 cypress/videos/*
+.php_cs.cache
+.php-cs-fixer.cache

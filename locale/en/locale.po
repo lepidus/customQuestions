@@ -16,3 +16,63 @@ msgstr "Custom Questions"
 
 msgid "plugins.generic.customQuestions.description"
 msgstr "A plugin to add custom questions to submission wizard"
+
+msgid "plugins.generic.customQuestions.questions"
+msgstr "Questions"
+
+msgid "plugins.generic.customQuestions.question"
+msgstr "Question"
+
+msgid "plugins.generic.customQuestions.create"
+msgstr "Create New Question"
+
+msgid "plugins.generic.customQuestions.changeType"
+msgstr "Changing the form item type..."
+
+msgid "plugins.generic.customQuestions.title"
+msgstr "Title"
+
+msgid "plugins.generic.customQuestions.questionDescription"
+msgstr "Description"
+
+msgid "plugins.generic.customQuestions.required"
+msgstr "Required to complete item"
+
+msgid "plugins.generic.customQuestions.questionType"
+msgstr "Question type"
+
+msgid "plugins.generic.customQuestions.chooseType"
+msgstr "Choose question type"
+
+msgid "plugins.generic.customQuestions.smalltextfield"
+msgstr "Single word text box"
+
+msgid "plugins.generic.customQuestions.textfield"
+msgstr "Single line text box"
+
+msgid "plugins.generic.customQuestions.textarea"
+msgstr "Extended text box"
+
+msgid "plugins.generic.customQuestions.checkboxes"
+msgstr "Checkboxes (you can choose one or more)"
+
+msgid "plugins.generic.customQuestions.radiobuttons"
+msgstr "Radio buttons (you can only choose one)"
+
+msgid "plugins.generic.customQuestions.dropdownbox"
+msgstr "Drop-down box"
+
+msgid "plugins.generic.customQuestions.responseItems"
+msgstr "Response Options"
+
+msgid "plugins.generic.customQuestions.possibleResponse"
+msgstr "Selection"
+
+msgid "plugins.generic.customQuestions.form.questionRequired"
+msgstr "The title of question is required."
+
+msgid "plugins.generic.customQuestions.form.questionTypeRequired"
+msgstr "It's necessary to define the type of question."
+
+msgid "plugins.generic.customQuestions.confirmDelete"
+msgstr "Confirm delete of a question..."

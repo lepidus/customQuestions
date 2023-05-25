@@ -16,3 +16,63 @@ msgstr "Perguntas personalizadas"
 
 msgid "plugins.generic.customQuestions.description"
 msgstr "Um plugin para adicionar perguntas personalizadas ao fluxo de submissão"
+
+msgid "plugins.generic.customQuestions.questions"
+msgstr "Perguntas"
+
+msgid "plugins.generic.customQuestions.question"
+msgstr "Pergunta"
+
+msgid "plugins.generic.customQuestions.create"
+msgstr "Criar Nova Pergunta"
+
+msgid "plugins.generic.customQuestions.changeType"
+msgstr "Alterando o tipo de item do formulário..."
+
+msgid "plugins.generic.customQuestions.title"
+msgstr "Título"
+
+msgid "plugins.generic.customQuestions.questionDescription"
+msgstr "Descrição"
+
+msgid "plugins.generic.customQuestions.required"
+msgstr "Preenchimento obrigatório"
+
+msgid "plugins.generic.customQuestions.questionType"
+msgstr "Tipo de pergunta"
+
+msgid "plugins.generic.customQuestions.chooseType"
+msgstr "Escolher tipo de pergunta"
+
+msgid "plugins.generic.customQuestions.smalltextfield"
+msgstr "Caixa de texto de uma palavra"
+
+msgid "plugins.generic.customQuestions.textfield"
+msgstr "Caixa de texto de uma linha"
+
+msgid "plugins.generic.customQuestions.textarea"
+msgstr "Caixa de texto estendida"
+
+msgid "plugins.generic.customQuestions.checkboxes"
+msgstr "Checkboxes (permite escolher mais de uma opção)"
+
+msgid "plugins.generic.customQuestions.radiobuttons"
+msgstr "Botões rádio (permite escolher apenas uma opção)"
+
+msgid "plugins.generic.customQuestions.dropdownbox"
+msgstr "Menu dropdown"
+
+msgid "plugins.generic.customQuestions.responseItems"
+msgstr "Opções de Resposta"
+
+msgid "plugins.generic.customQuestions.possibleResponse"
+msgstr "Escolha"
+
+msgid "plugins.generic.customQuestions.form.questionRequired"
+msgstr "O título da pergunta é obrigatório."
+
+msgid "plugins.generic.customQuestions.form.questionTypeRequired"
+msgstr "É necessário definir o tipo da pergunta."
+
+msgid "plugins.generic.customQuestions.confirmDelete"
+msgstr "Confirmar a exclusão da pergunta..."
