@@ -35,6 +35,7 @@ class DAO extends EntityDAO
     public function getAll(): LazyCollection
     {
         $rows = DB::table($this->table)
+            ->orderBy('seq')
             ->get();
 
         return LazyCollection::make(function () use ($rows) {

@@ -24,7 +24,7 @@ class CustomQuestionGridHandler extends GridHandler
         parent::__construct();
         $this->addRoleAssignment(
             [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SITE_ADMIN],
-            ['fetchGrid', 'fetchRow', 'createCustomQuestion', 'updateCustomQuestion']
+            ['fetchGrid', 'fetchRow', 'saveSequence', 'createCustomQuestion', 'updateCustomQuestion']
         );
     }
 
@@ -94,6 +94,17 @@ class CustomQuestionGridHandler extends GridHandler
             $customQuestions[$customQuestion->getId()] = $customQuestion;
         }
         return $customQuestions;
+    }
+
+    public function getDataElementSequence($gridDataElement): int
+    {
+        return $gridDataElement->getSequence();
+    }
+
+    public function setDataElementSequence($request, $rowId, $gridDataElement, $newSequence): void
+    {
+        $gridDataElement->setSequence($newSequence);
+        app(DAO::class)->update($gridDataElement);
     }
 
     public function getCustomQuestionFormTemplate(): string

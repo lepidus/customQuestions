@@ -18,8 +18,6 @@ class CustomQuestionGridRow extends GridRow
         assert($element instanceof CustomQuestion);
         $rowId = $this->getId();
 
-        error_log(print_r($rowId, true));
-
         $router = $request->getRouter();
         if (!empty($rowId) && is_numeric($rowId)) {
             $this->addAction(
