@@ -3,6 +3,7 @@
 namespace APP\plugins\generic\customQuestions;
 
 use APP\core\Application;
+use APP\plugins\generic\customQuestions\controllers\grid\CustomQuestionGridHandler;
 use APP\template\TemplateManager;
 use Illuminate\Database\Migrations\Migration;
 use PKP\core\JSONMessage;
@@ -42,7 +43,9 @@ class CustomQuestionsPlugin extends GenericPlugin
     public function setupGridHandler(string $hookName, array $params): bool
     {
         $component = & $params[0];
+        $componentInstance = & $params[2];
         if ($component == 'plugins.generic.customQuestions.controllers.grid.CustomQuestionGridHandler') {
+            $componentInstance = new CustomQuestionGridHandler();
             return true;
         }
         return false;

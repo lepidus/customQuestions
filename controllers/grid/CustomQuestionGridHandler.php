@@ -1,5 +1,8 @@
 <?php
 
+namespace APP\plugins\generic\customQuestions\controllers\grid;
+
+use APP\core\Request;
 use APP\notification\NotificationManager;
 use APP\plugins\generic\customQuestions\controllers\grid\form\CustomQuestionForm;
 use PKP\controllers\grid\GridColumn;
@@ -7,6 +10,7 @@ use PKP\controllers\grid\GridHandler;
 use PKP\core\JSONMessage;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
+use PKP\plugins\PluginRegistry;
 use PKP\security\authorization\ContextAccessPolicy;
 use PKP\security\authorization\PKPSiteAccessPolicy;
 use PKP\security\Role;
@@ -73,7 +77,7 @@ class CustomQuestionGridHandler extends GridHandler
         return $customQuestionsPlugin->getTemplateResource('customQuestionForm.tpl');
     }
 
-    public function createCustomQuestion(array $args, PKPRequest $request): JSONMessage
+    public function createCustomQuestion(array $args, Request $request): JSONMessage
     {
         $template = $this->getCustomQuestionFormTemplate();
         $customQuestionForm = new CustomQuestionForm($template);
@@ -82,7 +86,7 @@ class CustomQuestionGridHandler extends GridHandler
         return new JSONMessage(true, $customQuestionForm->fetch($request));
     }
 
-    public function updateCustomQuestion(array $args, PKPRequest $request): JSONMessage
+    public function updateCustomQuestion(array $args, Request $request): JSONMessage
     {
         $customQuestionId = (int) $request->getUserVar('custonQuestionId');
 
