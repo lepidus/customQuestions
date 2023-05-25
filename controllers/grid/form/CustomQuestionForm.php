@@ -41,9 +41,10 @@ class CustomQuestionForm extends Form
         $templateMgr = TemplateManager::getManager($request);
         $customQuestion = new CustomQuestion();
         $multipleResponsesQuestionTypesString = ';'
-        . implode(';', $customQuestion->getMultipleResponsesQuestionTypes())
-        . ';';
+            . implode(';', $customQuestion->getMultipleResponsesQuestionTypes())
+            . ';';
         $templateMgr->assign([
+            'customQuestionId' => $this->customQuestionId,
             'multipleResponsesQuestionTypes' => $customQuestion->getMultipleResponsesQuestionTypes(),
             'multipleResponsesQuestionTypesString' => $multipleResponsesQuestionTypesString,
             'customQuestionTypeOptions' => $customQuestion->getCustomQuestionTypeOptions(),
@@ -51,18 +52,37 @@ class CustomQuestionForm extends Form
         return parent::fetch($request, $template, $display);
     }
 
-    public function readInputData()
+    public function initData(): void
+    {
+        if (!$this->customQuestionId) {
+            return ;
+        }
+
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        $customQuestionDAO = app(DAO::class);
+        $customQuestion = $customQuestionDAO->get($this->customQuestionId);
+        $this->_data = [
+            'title' => $customQuestion->getData('title'),
+            'description' => $customQuestion->getData('description'),
+            'required' => $customQuestion->getRequired(),
+            'questionType' => $customQuestion->getQuestionType(),
+            'possibleResponses' => $customQuestion->getData('possibleResponses')
+        ];
+    }
+
+    public function readInputData(): void
     {
         $this->readUserVars(['title', 'description', 'required', 'questionType', 'possibleResponses']);
     }
 
-    public function execute(...$functionArgs)
+    public function execute(...$functionArgs): int
     {
         $customQuestionDAO = app(DAO::class);
         $request = Application::get()->getRequest();
 
         if ($this->customQuestionId) {
-            $customQuestion = $customQuestionDAO->getById($this->customQuestionId);
+            $customQuestion = $customQuestionDAO->get($this->customQuestionId);
         } else {
             $customQuestion = $customQuestionDAO->newDataObject();
             $customQuestion->setSequence(REALLY_BIG_NUMBER);
@@ -87,8 +107,7 @@ class CustomQuestionForm extends Form
             $customQuestion->setLocalizedPossibleResponses(null);
         }
         if ($customQuestion->getId()) {
-            $customQuestionDAO->deleteSetting($customQuestion->getId(), 'possibleResponses');
-            $customQuestionDAO->updateObject($customQuestion);
+            $customQuestionDAO->update($customQuestion);
         } else {
             $this->customQuestionId = $customQuestionDAO->insert($customQuestion);
             $customQuestionDAO->resequence();
@@ -107,7 +126,7 @@ class CustomQuestionForm extends Form
         return true;
     }
 
-    public function deleteEntry(Request $request, array $newRowId): bool
+    public function deleteEntry(Request $request, string $rowId): bool
     {
         $possibleResponsesProcessed = (array) $this->getData('possibleResponsesProcessed');
         foreach (array_keys($possibleResponsesProcessed) as $locale) {

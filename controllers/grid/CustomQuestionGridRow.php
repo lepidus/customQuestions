@@ -28,7 +28,7 @@ class CustomQuestionGridRow extends GridRow
                             $request,
                             null,
                             null,
-                            'editReviewFormElement',
+                            'editCustomQuestion',
                             null,
                             ['rowId' => $rowId]
                         ),

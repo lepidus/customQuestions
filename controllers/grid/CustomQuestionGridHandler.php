@@ -24,7 +24,14 @@ class CustomQuestionGridHandler extends GridHandler
         parent::__construct();
         $this->addRoleAssignment(
             [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SITE_ADMIN],
-            ['fetchGrid', 'fetchRow', 'saveSequence', 'createCustomQuestion', 'updateCustomQuestion']
+            [
+                'fetchGrid',
+                'fetchRow',
+                'saveSequence',
+                'createCustomQuestion',
+                'editCustomQuestion',
+                'updateCustomQuestion'
+            ]
         );
     }
 
@@ -124,12 +131,11 @@ class CustomQuestionGridHandler extends GridHandler
 
     public function updateCustomQuestion(array $args, Request $request): JSONMessage
     {
-        $customQuestionId = (int) $request->getUserVar('custonQuestionId');
-
+        $customQuestionId = (int) $request->getUserVar('customQuestionId');
         $template = $this->getCustomQuestionFormTemplate();
+
         $customQuestionForm = new CustomQuestionForm($template, $customQuestionId);
         $customQuestionForm->readInputData();
-
         if ($customQuestionForm->validate()) {
             $customQuestionId = $customQuestionForm->execute();
 
@@ -141,5 +147,15 @@ class CustomQuestionGridHandler extends GridHandler
         }
 
         return new JSONMessage(false);
+    }
+
+    public function editCustomQuestion(array $args, Request $request): JSONMessage
+    {
+        $customQuestionId = (int) $request->getUserVar('rowId');
+        $template = $this->getCustomQuestionFormTemplate();
+
+        $customQuestionForm = new CustomQuestionForm($template, $customQuestionId);
+        $customQuestionForm->initData();
+        return new JSONMessage(true, $customQuestionForm->fetch($request));
     }
 }
