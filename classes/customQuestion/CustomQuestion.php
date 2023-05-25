@@ -11,7 +11,7 @@ class CustomQuestion extends \PKP\core\DataObject
     public const CUSTOM_QUESTION_TYPE_RADIO_BUTTONS = 5;
     public const CUSTOM_QUESTION_TYPE_DROP_DOWN_BOX = 6;
 
-    public function getLocalizedTitle(): string
+    public function getLocalizedTitle(): ?string
     {
         return $this->getLocalizedData('title');
     }
@@ -21,7 +21,7 @@ class CustomQuestion extends \PKP\core\DataObject
         $this->setData('title', $title, null);
     }
 
-    public function getLocalizedDescription(): string
+    public function getLocalizedDescription(): ?string
     {
         return $this->getLocalizedData('description');
     }
@@ -31,17 +31,17 @@ class CustomQuestion extends \PKP\core\DataObject
         $this->setData('description', $description, null);
     }
 
-    public function getLocalizedPossibleResponses(): array
+    public function getLocalizedPossibleResponses(): ?array
     {
         return $this->getLocalizedData('possibleResponses');
     }
 
-    public function setLocalizedPossibleResponses(array $possibleResponses): void
+    public function setLocalizedPossibleResponses(?array $possibleResponses): void
     {
         $this->setData('possibleResponses', $possibleResponses, null);
     }
 
-    public function getSequence(): float
+    public function getSequence(): ?float
     {
         return $this->getData('sequence');
     }
@@ -51,7 +51,7 @@ class CustomQuestion extends \PKP\core\DataObject
         $this->setData('sequence', $sequence);
     }
 
-    public function getQuestionType(): string
+    public function getQuestionType(): ?string
     {
         return $this->getData('questionType');
     }
@@ -61,7 +61,7 @@ class CustomQuestion extends \PKP\core\DataObject
         $this->setData('questionType', $questionType);
     }
 
-    public function getRequired(): bool
+    public function getRequired(): ?bool
     {
         return $this->getData('required');
     }
@@ -71,7 +71,7 @@ class CustomQuestion extends \PKP\core\DataObject
         $this->setData('required', $required);
     }
 
-    public function getTitle(?string $locale): string
+    public function getTitle(?string $locale): ?string
     {
         return $this->getData('title', $locale);
     }
@@ -81,7 +81,7 @@ class CustomQuestion extends \PKP\core\DataObject
         $this->setData('title', $title, $locale);
     }
 
-    public function getDescription(?string $locale): string
+    public function getDescription(?string $locale): ?string
     {
         return $this->getData('description', $locale);
     }
@@ -91,7 +91,7 @@ class CustomQuestion extends \PKP\core\DataObject
         $this->setData('description', $description, $locale);
     }
 
-    public function getPossibleResponses(?string $locale): array
+    public function getPossibleResponses(?string $locale): ?array
     {
         return $this->getData('possibleResponses', $locale);
     }

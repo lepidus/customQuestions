@@ -45,4 +45,15 @@ class DAO extends EntityDAO
     {
         parent::_delete($customQuestion);
     }
+
+    public function resequence(): void
+    {
+        $customQuestionIds = DB::table($this->table)
+            ->pluck($this->primaryKeyColumn);
+
+        $i = 0;
+        foreach ($customQuestionIds as $customQuestionId) {
+            DB::table($this->table)->where($this->primaryKeyColumn, '=', $customQuestionId)->update(['seq' => ++$i]);
+        }
+    }
 }

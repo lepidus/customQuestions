@@ -3,10 +3,11 @@
 namespace APP\plugins\generic\customQuestions\controllers\grid\form;
 
 use APP\core\Application;
+use APP\core\Request;
 use APP\plugins\generic\customQuestions\classes\customQuestion\CustomQuestion;
+use APP\plugins\generic\customQuestions\classes\customQuestion\DAO;
 use APP\template\TemplateManager;
 use PKP\controllers\listbuilder\ListbuilderHandler;
-use PKP\db\DAORegistry;
 use PKP\form\Form;
 
 class CustomQuestionForm extends Form
@@ -57,7 +58,7 @@ class CustomQuestionForm extends Form
 
     public function execute(...$functionArgs)
     {
-        $customQuestionDAO = DAORegistry::getDAO('CustomQuestionDAO');
+        $customQuestionDAO = app(DAO::class);
         $request = Application::get()->getRequest();
 
         if ($this->customQuestionId) {
@@ -67,8 +68,8 @@ class CustomQuestionForm extends Form
             $customQuestion->setSequence(REALLY_BIG_NUMBER);
         }
 
-        $customQuestion->setTitle($this->getData('title'), null);
-        $customQuestion->setDescription($this->getData('description'), null);
+        $customQuestion->setLocalizedTitle($this->getData('title'));
+        $customQuestion->setLocalizedDescription($this->getData('description'));
         $customQuestion->setRequired($this->getData('required') ? 1 : 0);
         $customQuestion->setQuestionType($this->getData('questionType'));
 
@@ -81,22 +82,22 @@ class CustomQuestionForm extends Form
                 [$this, 'insertEntry'],
                 [$this, 'updateEntry']
             );
-            $customQuestion->setPossibleResponses($this->getData('possibleResponsesProcessed'), null);
+            $customQuestion->setLocalizedPossibleResponses($this->getData('possibleResponsesProcessed'));
         } else {
-            $customQuestion->setPossibleResponses(null, null);
+            $customQuestion->setLocalizedPossibleResponses(null);
         }
         if ($customQuestion->getId()) {
             $customQuestionDAO->deleteSetting($customQuestion->getId(), 'possibleResponses');
             $customQuestionDAO->updateObject($customQuestion);
         } else {
-            $this->customQuestionId = $customQuestionDAO->insertObject($customQuestion);
-            $customQuestionDAO->resequenceReviewFormElements();
+            $this->customQuestionId = $customQuestionDAO->insert($customQuestion);
+            $customQuestionDAO->resequence();
         }
         parent::execute(...$functionArgs);
         return $this->customQuestionId;
     }
 
-    public function insertEntry(PKPRequest $request, int $newRowId): bool
+    public function insertEntry(Request $request, array $newRowId): bool
     {
         $possibleResponsesProcessed = (array) $this->getData('possibleResponsesProcessed');
         foreach ($newRowId['possibleResponse'] as $key => $value) {
@@ -106,7 +107,7 @@ class CustomQuestionForm extends Form
         return true;
     }
 
-    public function deleteEntry(PKPRequest $request, int $newRowId): bool
+    public function deleteEntry(Request $request, array $newRowId): bool
     {
         $possibleResponsesProcessed = (array) $this->getData('possibleResponsesProcessed');
         foreach (array_keys($possibleResponsesProcessed) as $locale) {
@@ -116,7 +117,7 @@ class CustomQuestionForm extends Form
         return true;
     }
 
-    public function updateEntry(PKPRequest $request, int $rowId, int $newRowId): bool
+    public function updateEntry(Request $request, array $rowId, array $newRowId): bool
     {
         $possibleResponsesProcessed = (array) $this->getData('possibleResponsesProcessed');
         foreach ($newRowId['possibleResponse'] as $locale => $value) {

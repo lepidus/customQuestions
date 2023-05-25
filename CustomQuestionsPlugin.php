@@ -20,6 +20,7 @@ class CustomQuestionsPlugin extends GenericPlugin
 
         if ($success && $this->getEnabled()) {
             Hook::add('LoadComponentHandler', [$this, 'setupGridHandler']);
+            Hook::add('Schema::get::customQuestion', [$this, 'addCustomQuestionSchema']);
         }
 
         return $success;
@@ -38,6 +39,29 @@ class CustomQuestionsPlugin extends GenericPlugin
     public function getInstallMigration(): Migration
     {
         return new CustomQuestionsSchemaMigration();
+    }
+
+    public function addCustomQuestionSchema(string $hookName, array $params): bool
+    {
+        $schema = & $params[0];
+
+        $schemaFile = sprintf(
+            '%s/plugins/generic/customQuestions/schemas/%s.json',
+            BASE_SYS_DIR,
+            'customQuestion'
+        );
+        if (file_exists($schemaFile)) {
+            $schema = json_decode(file_get_contents($schemaFile));
+            if (!$schema) {
+                throw new \Exception(
+                    'Schema failed to decode. This usually means it is invalid JSON. Requested: '
+                    . $schemaFile
+                    . '. Last JSON error: '
+                    . json_last_error()
+                );
+            }
+        }
+        return true;
     }
 
     public function setupGridHandler(string $hookName, array $params): bool
