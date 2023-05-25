@@ -75,10 +75,9 @@
                 {capture assign=questionOptionsUrl}
                     {url
                         router=\PKP\core\PKPApplication::ROUTE_COMPONENT
-                        component="listbuilder.settings.reviewForms.ReviewFormElementResponseItemListbuilderHandler"
+                        component="plugins.generic.customQuestions.controllers.listbuilder.CustomQuestionResponseItemListbuilderHandler"
                         op="fetch"
-                        reviewFormId=$reviewFormId
-                        reviewFormElementId=$reviewFormElementId
+                        customQuestionId=$customQuestionId
                         escape=false
                     }
                 {/capture}
