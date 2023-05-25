@@ -4,7 +4,9 @@ namespace APP\plugins\generic\customQuestions\controllers\grid;
 
 use APP\core\Request;
 use APP\notification\NotificationManager;
+use APP\plugins\generic\customQuestions\classes\customQuestion\DAO;
 use APP\plugins\generic\customQuestions\controllers\grid\form\CustomQuestionForm;
+use PKP\controllers\grid\feature\OrderGridItemsFeature;
 use PKP\controllers\grid\GridColumn;
 use PKP\controllers\grid\GridHandler;
 use PKP\core\JSONMessage;
@@ -57,18 +59,41 @@ class CustomQuestionGridHandler extends GridHandler
             )
         );
 
+        $customQuestionGridCellProvider = new CustomQuestionGridCellProvider();
+
         $this->addColumn(
             new GridColumn(
-                'question',
+                'title',
                 'plugins.generic.customQuestions.question',
                 null,
                 null,
-                null,
+                $customQuestionGridCellProvider,
                 ['html' => true, 'maxLength' => 220]
             )
         );
 
         $this->setTitle('plugins.generic.customQuestions.questions');
+    }
+
+    public function initFeatures($request, $args): array
+    {
+        return [new OrderGridItemsFeature()];
+    }
+
+    protected function getRowInstance(): CustomQuestionGridRow
+    {
+        return new CustomQuestionGridRow();
+    }
+
+    protected function loadData($request, $filter = null): array
+    {
+        $customQuestionDAO = app(DAO::class);
+        $customQuestions = [];
+
+        foreach ($customQuestionDAO->getAll() as $customQuestion) {
+            $customQuestions[$customQuestion->getId()] = $customQuestion;
+        }
+        return $customQuestions;
     }
 
     public function getCustomQuestionFormTemplate(): string

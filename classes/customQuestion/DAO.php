@@ -3,8 +3,8 @@
 namespace APP\plugins\generic\customQuestions\classes\customQuestion;
 
 use Illuminate\Support\Facades\DB;
-use PKP\core\EntityDAO;
 use Illuminate\Support\LazyCollection;
+use PKP\core\EntityDAO;
 
 class DAO extends EntityDAO
 {
