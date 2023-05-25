@@ -30,7 +30,8 @@ class CustomQuestionGridHandler extends GridHandler
                 'saveSequence',
                 'createCustomQuestion',
                 'editCustomQuestion',
-                'updateCustomQuestion'
+                'updateCustomQuestion',
+                'deleteCustomQuestion'
             ]
         );
     }
@@ -157,5 +158,18 @@ class CustomQuestionGridHandler extends GridHandler
         $customQuestionForm = new CustomQuestionForm($template, $customQuestionId);
         $customQuestionForm->initData();
         return new JSONMessage(true, $customQuestionForm->fetch($request));
+    }
+
+    public function deleteCustomQuestion(array $args, Request $request): JSONMessage
+    {
+        $customQuestionId = (int) $request->getUserVar('rowId');
+
+        if ($request->checkCSRF()) {
+            $customQuestionDAO = app(DAO::class);
+            $customQuestionDAO->deleteById($customQuestionId);
+            return \PKP\db\DAO::getDataChangedEvent($customQuestionId);
+        }
+
+        return new JSONMessage(false);
     }
 }

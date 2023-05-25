@@ -45,13 +45,13 @@ class CustomQuestionGridRow extends GridRow
                     'delete',
                     new RemoteActionConfirmationModal(
                         $request->getSession(),
-                        __('manager.reviewFormElements.confirmDelete'),
+                        __('plugins.generic.customQuestions.confirmDelete'),
                         null,
                         $router->url(
                             $request,
                             null,
                             null,
-                            'deleteReviewFormElement',
+                            'deleteCustomQuestion',
                             null,
                             ['rowId' => $rowId]
                         )

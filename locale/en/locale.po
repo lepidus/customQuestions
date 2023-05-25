@@ -73,3 +73,6 @@ msgstr "The title of question is required."
 
 msgid "plugins.generic.customQuestions.form.questionTypeRequired"
 msgstr "It's necessary to define the type of question."
+
+msgid "plugins.generic.customQuestions.confirmDelete"
+msgstr "Confirm delete of a question..."

@@ -73,3 +73,6 @@ msgstr "O título da pergunta é obrigatório."
 
 msgid "plugins.generic.customQuestions.form.questionTypeRequired"
 msgstr "É necessário definir o tipo da pergunta."
+
+msgid "plugins.generic.customQuestions.confirmDelete"
+msgstr "Confirmar a exclusão da pergunta..."
