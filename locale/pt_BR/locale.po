@@ -76,3 +76,9 @@ msgstr "É necessário definir o tipo da pergunta."
 
 msgid "plugins.generic.customQuestions.confirmDelete"
 msgstr "Confirmar a exclusão da pergunta..."
+
+msgid "plugins.generic.customQuestions.submissionWizard.name"
+msgstr "Perguntas personalizadas"
+
+msgid "plugins.generic.customQuestions.submissionWizard.description"
+msgstr "Essa seção possui algumas perguntas personalizadas feitas pelos administradores do servidor de preprints"

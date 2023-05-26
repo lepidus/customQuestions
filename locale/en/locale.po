@@ -76,3 +76,9 @@ msgstr "It's necessary to define the type of question."
 
 msgid "plugins.generic.customQuestions.confirmDelete"
 msgstr "Confirm delete of a question..."
+
+msgid "plugins.generic.customQuestions.submissionWizard.name"
+msgstr "Custom questions"
+
+msgid "plugins.generic.customQuestions.submissionWizard.description"
+msgstr "This section has some custom questions made by the preprint server managers"

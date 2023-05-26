@@ -3,6 +3,7 @@
 namespace APP\plugins\generic\customQuestions;
 
 use APP\core\Application;
+use APP\plugins\generic\customQuestions\classes\CustomQuestionsSectionHookCallbacks;
 use APP\plugins\generic\customQuestions\controllers\grid\CustomQuestionGridHandler;
 use APP\plugins\generic\customQuestions\controllers\listbuilder\CustomQuestionResponseItemListbuilderHandler;
 use APP\template\TemplateManager;
@@ -20,6 +21,12 @@ class CustomQuestionsPlugin extends GenericPlugin
         $success = parent::register($category, $path);
 
         if ($success && $this->getEnabled()) {
+            $customQuestionsSectionHookCallbacks = new CustomQuestionsSectionHookCallbacks($this);
+            Hook::add(
+                'TemplateManager::display',
+                [$customQuestionsSectionHookCallbacks, 'addToSubmissionWizardSteps']
+            );
+
             Hook::add('LoadComponentHandler', [$this, 'setupGridHandler']);
             Hook::add('Schema::get::customQuestion', [$this, 'addCustomQuestionSchema']);
         }
