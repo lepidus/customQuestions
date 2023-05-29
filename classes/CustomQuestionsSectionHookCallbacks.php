@@ -5,10 +5,10 @@ namespace APP\plugins\generic\customQuestions\classes;
 use APP\core\Application;
 use APP\pages\submission\SubmissionHandler;
 use APP\plugins\generic\customQuestions\classes\components\forms\CustomQuestions;
+use APP\plugins\generic\customQuestions\classes\customQuestion\DAO;
 use APP\plugins\generic\customQuestions\CustomQuestionsPlugin;
 use APP\submission\Submission;
 use PKP\components\forms\FormComponent;
-use PKP\context\Context;
 
 class CustomQuestionsSectionHookCallbacks
 {
@@ -22,9 +22,12 @@ class CustomQuestionsSectionHookCallbacks
     public function addToSubmissionWizardSteps(string $hookName, array $params): bool
     {
         $request = Application::get()->getRequest();
-        $context = $request->getContext();
+        $templateMgr = $params[0];
 
-        if ($request->getRequestedPage() !== 'submission' or $request->getRequestedOp() === 'saved') {
+        if (
+            $request->getRequestedPage() !== 'submission'
+            || $request->getRequestedOp() === 'saved'
+        ) {
             return false;
         }
 
@@ -33,22 +36,27 @@ class CustomQuestionsSectionHookCallbacks
             ->getHandler()
             ->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
 
-        if (!$submission or !$submission->getData('submissionProgress')) {
+        if (
+            !$submission
+            || !$submission->getData('submissionProgress')
+        ) {
             return false;
         }
 
-        $templateMgr = $params[0];
-
-        $supportedSubmissionLocales = $context->getSupportedSubmissionLocaleNames();
+        $supportedSubmissionLocales = $request->getContext()->getSupportedSubmissionLocaleNames();
         $formLocales = array_map(
             fn (string $locale, string $name) => ['key' => $locale, 'label' => $name],
             array_keys($supportedSubmissionLocales),
             $supportedSubmissionLocales
         );
 
-        $customQuestionsForm = new CustomQuestions('apiUrl', $formLocales, []);
+        $customQuestionDAO = app(DAO::class);
+        $customQuestions = $customQuestionDAO->getAll();
+
+        $customQuestionsForm = $this->getCustomQuestionsForm($formLocales, $customQuestions->toArray());
+
         $this->removeButtonFromForm($customQuestionsForm);
-        $formConfig = $this->getLocalizedForm($customQuestionsForm, $submission, $request->getContext());
+        $formConfig = $this->getLocalizedForm($customQuestionsForm, $submission, $formLocales);
 
         $steps = $templateMgr->getState('steps');
         $steps = array_map(function ($step) use ($formConfig) {
@@ -72,6 +80,11 @@ class CustomQuestionsSectionHookCallbacks
         return false;
     }
 
+    private function getCustomQuestionsForm(array $locales, array $customQuestions): CustomQuestions
+    {
+        return new CustomQuestions('apiUrl', $locales, $customQuestions);
+    }
+
     private function removeButtonFromForm(FormComponent $form): void
     {
         $form->addPage([
@@ -87,20 +100,12 @@ class CustomQuestionsSectionHookCallbacks
         }
     }
 
-    private function getLocalizedForm(FormComponent $form, Submission $submission, Context $context): array
+    private function getLocalizedForm(FormComponent $form, Submission $submission, array $supportedFormLocales): array
     {
         $config = $form->getConfig();
 
         $config['primaryLocale'] = $submission->getLocale();
         $config['visibleLocales'] = [$submission->getLocale()];
-
-        $supportedFormLocales = [];
-        foreach ($context->getSupportedSubmissionLocaleNames() as $localeKey => $name) {
-            $supportedFormLocales[] = [
-                'key' => $localeKey,
-                'label' => $name,
-            ];
-        }
 
         usort($supportedFormLocales, fn ($a, $b) => $a['key'] === $submission->getLocale() ? -1 : 1);
 

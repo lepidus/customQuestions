@@ -56,6 +56,7 @@ class CustomQuestions extends FormComponent
                     'description' => $customQuestion->getLocalizedDescription(),
                     'isMultilingual' => true,
                     'isRequired' => $customQuestion->getRequired(),
+                    'size' => 'large',
                 ]
             ),
             CustomQuestion::CUSTOM_QUESTION_TYPE_TEXTAREA => new FieldRichTextarea(
