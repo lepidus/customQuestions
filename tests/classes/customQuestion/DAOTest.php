@@ -4,7 +4,7 @@ namespace APP\plugins\generic\customQuestions\tests\classes\customQuestion;
 
 use APP\plugins\generic\customQuestions\classes\customQuestion\CustomQuestion;
 use APP\plugins\generic\customQuestions\classes\customQuestion\DAO;
-use Illuminate\Support\Facades\DB;
+use PKP\db\DAORegistry;
 use PKP\plugins\Hook;
 use PKP\tests\DatabaseTestCase;
 
@@ -39,7 +39,7 @@ class DAOTest extends DatabaseTestCase
 
     protected function getAffectedTables(): array
     {
-        return ['custom_questions', 'custom_question_settings'];
+        return ['custom_questions', 'custom_question_settings', 'servers', 'server_settings'];
     }
 
     public function testCreateNewDataObject(): void
@@ -52,9 +52,11 @@ class DAOTest extends DatabaseTestCase
     public function testCrud(): void
     {
         $locale = 'en';
+        $contextId = 1;
 
         $customQuestionDAO = app(DAO::class);
         $customQuestion = $customQuestionDAO->newDataObject();
+        $customQuestion->setContextId($contextId);
         $customQuestion->setTitle('Test title', $locale);
         $customQuestion->setDescription('Test description', $locale);
         $customQuestion->setSequence(REALLY_BIG_NUMBER);
@@ -66,6 +68,7 @@ class DAOTest extends DatabaseTestCase
         $fetchedCustomQuestion = $customQuestionDAO->get($insertedCustomQuestionId);
         self::assertEquals([
             'id' => $insertedCustomQuestionId,
+            'contextId' => $contextId,
             'title' => ['en' => 'Test title'],
             'description' => ['en' => 'Test description'],
             'sequence' => REALLY_BIG_NUMBER,
@@ -85,6 +88,7 @@ class DAOTest extends DatabaseTestCase
         $fetchedCustomQuestion = $customQuestionDAO->get($insertedCustomQuestionId);
         self::assertEquals([
             'id' => $insertedCustomQuestionId,
+            'contextId' => $contextId,
             'title' => ['en' => 'Updated title'],
             'description' => ['en' => 'Updated description'],
             'sequence' => 3.0,
@@ -98,30 +102,52 @@ class DAOTest extends DatabaseTestCase
         self::assertNull($fetchedCustomQuestion);
     }
 
+    public function testGetByContextId(): void
+    {
+        $customQuestionDAO = app(DAO::class);
+
+        $contextDAO = DAORegistry::getDAO('ServerDAO');
+        $context = $contextDAO->newDataObject();
+        $context->setData('primaryLocale', 'en');
+        $context->setPath('context/path');
+        $contextDAO->insertObject($context);
+
+        $customQuestion = $customQuestionDAO->newDataObject();
+        $customQuestion->setContextId($context->getId());
+        $customQuestion->setTitle('Question in context', 'en');
+        $customQuestion->setSequence(1.0);
+        $customQuestion->setRequired(false);
+        $customQuestion->setQuestionType(CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD);
+        $customQuestionDAO->insert($customQuestion);
+
+        $customQuestions = $customQuestionDAO->getByContextId($context->getId());
+        self::assertEquals([$customQuestion], $customQuestions->toArray());
+    }
+
     public function testResequenceQuestions(): void
     {
         $customQuestionDAO = app(DAO::class);
 
-        $row = DB::table($customQuestionDAO->table)
-            ->orderBy('seq', 'desc')
-            ->first();
+        $contextDAO = DAORegistry::getDAO('ServerDAO');
+        $context = $contextDAO->newDataObject();
+        $context->setData('primaryLocale', 'en');
+        $context->setPath('context/path');
+        $contextDAO->insertObject($context);
 
-        if (isset($row)) {
-            $lastSeq = $row->seq;
-        } else {
-            $firstCustomQuestion = $customQuestionDAO->newDataObject();
-            $firstCustomQuestion->setSequence(1.0);
-            $firstCustomQuestion->setQuestionType(CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD);
-            $customQuestionDAO->insert($firstCustomQuestion);
-            $lastSeq = $firstCustomQuestion->getSequence();
-        }
+        $firstCustomQuestion = $customQuestionDAO->newDataObject();
+        $firstCustomQuestion->setContextId($context->getId());
+        $firstCustomQuestion->setSequence(1.0);
+        $firstCustomQuestion->setQuestionType(CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD);
+        $customQuestionDAO->insert($firstCustomQuestion);
+        $lastSeq = $firstCustomQuestion->getSequence();
 
         $customQuestion = $customQuestionDAO->newDataObject();
+        $customQuestion->setContextId($context->getId());
         $customQuestion->setSequence(1.0);
         $customQuestion->setQuestionType(CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD);
         $customQuestionDAO->insert($customQuestion);
 
-        $customQuestionDAO->resequence();
+        $customQuestionDAO->resequence($context->getId());
 
         $fetchedCustomQuestion = $customQuestionDAO->get($customQuestion->getId());
         self::assertEquals(++$lastSeq, $fetchedCustomQuestion->getSequence());

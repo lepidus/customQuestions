@@ -41,6 +41,16 @@ class CustomQuestion extends \PKP\core\DataObject
         $this->setData('possibleResponses', $possibleResponses, null);
     }
 
+    public function getContextId(): int
+    {
+        return $this->getData('contextId');
+    }
+
+    public function setContextId(int $contextId): void
+    {
+        $this->setData('contextId', $contextId);
+    }
+
     public function getSequence(): ?float
     {
         return $this->getData('sequence');

@@ -97,7 +97,7 @@ class CustomQuestionGridHandler extends GridHandler
         $customQuestionDAO = app(DAO::class);
         $customQuestions = [];
 
-        foreach ($customQuestionDAO->getAll() as $customQuestion) {
+        foreach ($customQuestionDAO->getByContextId($request->getContext()->getId()) as $customQuestion) {
             $customQuestions[$customQuestion->getId()] = $customQuestion;
         }
         return $customQuestions;
@@ -122,8 +122,9 @@ class CustomQuestionGridHandler extends GridHandler
 
     public function createCustomQuestion(array $args, Request $request): JSONMessage
     {
+        $contextId = $request->getContext()->getId();
         $template = $this->getCustomQuestionFormTemplate();
-        $customQuestionForm = new CustomQuestionForm($template);
+        $customQuestionForm = new CustomQuestionForm($template, $contextId);
         $customQuestionForm->initData();
 
         return new JSONMessage(true, $customQuestionForm->fetch($request));
@@ -132,9 +133,10 @@ class CustomQuestionGridHandler extends GridHandler
     public function updateCustomQuestion(array $args, Request $request): JSONMessage
     {
         $customQuestionId = (int) $request->getUserVar('customQuestionId');
+        $contextId = $request->getContext()->getId();
         $template = $this->getCustomQuestionFormTemplate();
 
-        $customQuestionForm = new CustomQuestionForm($template, $customQuestionId);
+        $customQuestionForm = new CustomQuestionForm($template, $contextId, $customQuestionId);
         $customQuestionForm->readInputData();
         if ($customQuestionForm->validate()) {
             $customQuestionId = $customQuestionForm->execute();
@@ -152,9 +154,10 @@ class CustomQuestionGridHandler extends GridHandler
     public function editCustomQuestion(array $args, Request $request): JSONMessage
     {
         $customQuestionId = (int) $request->getUserVar('rowId');
+        $contextId = $request->getContext()->getId();
         $template = $this->getCustomQuestionFormTemplate();
 
-        $customQuestionForm = new CustomQuestionForm($template, $customQuestionId);
+        $customQuestionForm = new CustomQuestionForm($template, $contextId, $customQuestionId);
         $customQuestionForm->initData();
         return new JSONMessage(true, $customQuestionForm->fetch($request));
     }

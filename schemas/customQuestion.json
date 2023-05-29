@@ -6,6 +6,9 @@
 			"type": "integer",
 			"readOnly": true
 		},
+		"contextId": {
+			"type": "integer"
+		},
 		"title": {
 			"type": "string",
 			"multilingual": true

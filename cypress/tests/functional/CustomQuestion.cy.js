@@ -14,9 +14,7 @@ describe('Custom Quetions plugin tests', function() {
 
 		cy.get('a:contains("Create New Question")').click();
 		cy.wait(2000);
-		cy.get('textarea[name="title[en]"]').then(node => {
-			cy.setTinyMceContent(node.attr('id'), 'Here is my custom question.');
-		});
+		cy.get('input[name="title[en]"]').type('Here is my custom question.');
 		cy.get('textarea[name="description[en]"]').then(node => {
 			cy.setTinyMceContent(node.attr('id'), 'Here is my custom description.');
 		});
@@ -42,9 +40,7 @@ describe('Custom Quetions plugin tests', function() {
 		cy.get('a[id*="customquestionsplugin-settings"]').click();
 		cy.get('tr[id*="customquestiongrid-row"]:contains("Here is my custom question.") a.show_extras').click();
 		cy.get('tr[id*="customquestiongrid-row"]:contains("Here is my custom question.")').next().contains('Edit').click();
-		cy.get('textarea[name="title[en]"]').then(node => {
-			cy.setTinyMceContent(node.attr('id'), 'Edited custom question.');
-		});
+		cy.get('input[name="title[en]"]').type('Edited custom question.');
 		cy.get('textarea[name="description[en]"]').then(node => {
 			cy.setTinyMceContent(node.attr('id'), 'Edited question description.');
 		});

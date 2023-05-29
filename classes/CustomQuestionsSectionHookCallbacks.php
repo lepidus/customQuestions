@@ -51,7 +51,7 @@ class CustomQuestionsSectionHookCallbacks
         );
 
         $customQuestionDAO = app(DAO::class);
-        $customQuestions = $customQuestionDAO->getAll();
+        $customQuestions = $customQuestionDAO->getByContextId($request->getContext()->getId());
 
         $customQuestionsForm = $this->getCustomQuestionsForm($formLocales, $customQuestions->toArray());
 
