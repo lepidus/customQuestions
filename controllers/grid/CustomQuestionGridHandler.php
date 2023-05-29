@@ -76,7 +76,6 @@ class CustomQuestionGridHandler extends GridHandler
                 null,
                 null,
                 $customQuestionGridCellProvider,
-                ['html' => true, 'maxLength' => 220]
             )
         );
 
