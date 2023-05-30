@@ -1,0 +1,33 @@
+{
+	"title": "Custom Question Response",
+	"description": "The response of a custom question.",
+	"properties": {
+		"id": {
+			"type": "integer",
+			"apiSummary": true,
+			"readOnly": true
+		},
+		"submissionId": {
+			"type": "integer",
+			"apiSummary": true
+		},
+		"customQuestionId": {
+			"type": "integer",
+			"apiSummary": true
+		},
+		"value": {
+			"type": "string",
+			"apiSummary": true,
+			"validation": [
+				"nullable"
+			]
+		},
+		"type": {
+			"type": "string",
+			"apiSummary": true,
+			"validation": [
+				"nullable"
+			]
+		}
+	}
+}
