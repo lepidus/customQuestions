@@ -22,7 +22,7 @@
 				"nullable"
 			]
 		},
-		"type": {
+		"responseType": {
 			"type": "string",
 			"apiSummary": true,
 			"validation": [

@@ -36,12 +36,12 @@ class CustomQuestionResponse extends \PKP\core\DataObject
 
     public function getResponseType()
     {
-        return $this->getData('type');
+        return $this->getData('responseType');
     }
 
-    public function setResponseType($type)
+    public function setResponseType($responseType)
     {
-        $this->setData('type', $type);
+        $this->setData('responseType', $responseType);
     }
 }
 
