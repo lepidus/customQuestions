@@ -14,6 +14,7 @@ class DAO extends EntityDAO
     public $primaryKeyColumn = 'custom_question_id';
     public $primaryTableColumns = [
         'id' => 'custom_question_id',
+        'contextId' => 'context_id',
         'sequence' => 'seq',
         'questionType' => 'question_type',
         'required' => 'required',
@@ -32,9 +33,10 @@ class DAO extends EntityDAO
         return $row ? $this->fromRow($row) : null;
     }
 
-    public function getAll(): LazyCollection
+    public function getByContextId(int $contextId): LazyCollection
     {
         $rows = DB::table($this->table)
+            ->where('context_id', $contextId)
             ->orderBy('seq')
             ->get();
 
@@ -60,9 +62,10 @@ class DAO extends EntityDAO
         parent::_delete($customQuestion);
     }
 
-    public function resequence(): void
+    public function resequence(int $contextId): void
     {
         $customQuestionIds = DB::table($this->table)
+            ->where('context_id', '=', $contextId)
             ->pluck($this->primaryKeyColumn);
 
         $i = 0;

@@ -12,12 +12,14 @@ use PKP\form\Form;
 
 class CustomQuestionForm extends Form
 {
+    public $contextId;
     public $customQuestionId;
 
-    public function __construct(string $template, int $customQuestionId = null)
+    public function __construct(string $template, int $contextId, int $customQuestionId = null)
     {
         parent::__construct($template);
 
+        $this->contextId = $contextId;
         $this->customQuestionId = $customQuestionId;
 
         $this->addCheck(new \PKP\form\validation\FormValidatorLocale(
@@ -59,7 +61,6 @@ class CustomQuestionForm extends Form
         }
 
         $request = Application::get()->getRequest();
-        $context = $request->getContext();
         $customQuestionDAO = app(DAO::class);
         $customQuestion = $customQuestionDAO->get($this->customQuestionId);
         $this->_data = [
@@ -88,6 +89,7 @@ class CustomQuestionForm extends Form
             $customQuestion->setSequence(REALLY_BIG_NUMBER);
         }
 
+        $customQuestion->setContextId($this->contextId);
         $customQuestion->setLocalizedTitle($this->getData('title'));
         $customQuestion->setLocalizedDescription($this->getData('description'));
         $customQuestion->setRequired($this->getData('required') ? 1 : 0);
@@ -110,7 +112,7 @@ class CustomQuestionForm extends Form
             $customQuestionDAO->update($customQuestion);
         } else {
             $this->customQuestionId = $customQuestionDAO->insert($customQuestion);
-            $customQuestionDAO->resequence();
+            $customQuestionDAO->resequence($this->contextId);
         }
         parent::execute(...$functionArgs);
         return $this->customQuestionId;

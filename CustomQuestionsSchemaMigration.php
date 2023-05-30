@@ -12,9 +12,13 @@ class CustomQuestionsSchemaMigration extends Migration
     {
         Schema::create('custom_questions', function (Blueprint $table) {
             $table->bigInteger('custom_question_id')->autoIncrement();
+            $table->bigInteger('context_id');
             $table->float('seq', 8, 2)->default(0);
             $table->bigInteger('question_type');
             $table->smallInteger('required')->nullable();
+
+            $table->foreign('context_id')->references('server_id')->on('servers')->onDelete('cascade');
+            $table->index(['context_id'], 'custom_questions_context_id');
         });
 
         Schema::create('custom_question_settings', function (Blueprint $table) {

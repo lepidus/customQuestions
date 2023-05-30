@@ -9,6 +9,7 @@ class CustomQuestionTest extends PKPTestCase
 {
     public function testGettersAndSetters(): void
     {
+        $contextId = 1;
         $title = 'Test question title';
         $description = 'Test question description';
         $questionType = CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD;
@@ -21,6 +22,7 @@ class CustomQuestionTest extends PKPTestCase
         ];
 
         $customQuestion = new CustomQuestion();
+        $customQuestion->setContextId($contextId);
         $customQuestion->setTitle($title, null);
         $customQuestion->setDescription($description, null);
         $customQuestion->setQuestionType($questionType);
@@ -28,6 +30,7 @@ class CustomQuestionTest extends PKPTestCase
         $customQuestion->setSequence($seq);
         $customQuestion->setPossibleResponses($possibleResponses, null);
 
+        self::assertEquals($contextId, $customQuestion->getContextId());
         self::assertEquals($title, $customQuestion->getTitle(null));
         self::assertEquals($description, $customQuestion->getDescription(null));
         self::assertEquals($questionType, $customQuestion->getQuestionType());

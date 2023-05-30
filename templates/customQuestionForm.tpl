@@ -35,7 +35,7 @@
     {fbvFormArea id="customQuestionForm"}
 
         {fbvFormSection title="plugins.generic.customQuestions.title" required=true for="title"}
-            {fbvElement type="textarea" id="title" value=$title multilingual=true rich=true required=true}
+            {fbvElement type="text" id="title" value=$title multilingual=true required=true}
         {/fbvFormSection}
 
         {fbvFormSection title="plugins.generic.customQuestions.questionDescription" for="description"}
