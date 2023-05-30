@@ -17,7 +17,10 @@ class CustomQuestionsSchemaMigration extends Migration
             $table->bigInteger('question_type');
             $table->smallInteger('required')->nullable();
 
-            $table->foreign('context_id')->references('server_id')->on('servers')->onDelete('cascade');
+            $table->foreign('context_id')
+                ->references('server_id')
+                ->on('servers')
+                ->onDelete('cascade');
             $table->index(['context_id'], 'custom_questions_context_id');
         });
 
@@ -34,13 +37,24 @@ class CustomQuestionsSchemaMigration extends Migration
 
         Schema::create('custom_question_responses', function (Blueprint $table) {
             $table->bigIncrements('custom_question_response_id');
+            $table->bigInteger('custom_question_id');
             $table->bigInteger('submission_id');
             $table->string('response_type', 6)->nullable();
             $table->text('response_value')->nullable();
 
-            $table->foreign('submission_id')->references('submission_id')->on('submissions')->onDelete('cascade');
+            $table->foreign('custom_question_id')
+                ->references('custom_question_id')
+                ->on('custom_questions')
+                ->onDelete('cascade');
+            $table->index(['custom_question_id'], 'custom_question_responses_custom_question_id');
+
+            $table->foreign('submission_id')
+                ->references('submission_id')
+                ->on('submissions')
+                ->onDelete('cascade');
             $table->index(['submission_id'], 'custom_question_responses_submission_id');
-            $table->index(['custom_question_response_id', 'submission_id'], 'custom_question_responses_unique');
+
+            $table->index(['custom_question_id', 'submission_id'], 'custom_question_responses_unique');
         });
     }
 }
