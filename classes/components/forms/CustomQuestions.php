@@ -40,7 +40,7 @@ class CustomQuestions extends FormComponent
 
         $fieldComponents = [
             CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD => new FieldText(
-                $customQuestion->getLocalizedTitle(),
+                $this->toKebabCase($customQuestion->getLocalizedTitle()),
                 [
                     'label' => $customQuestion->getLocalizedTitle(),
                     'description' => $customQuestion->getLocalizedDescription(),
@@ -50,7 +50,7 @@ class CustomQuestions extends FormComponent
                 ]
             ),
             CustomQuestion::CUSTOM_QUESTION_TYPE_TEXT_FIELD => new FieldText(
-                $customQuestion->getLocalizedTitle(),
+                $this->toKebabCase($customQuestion->getLocalizedTitle()),
                 [
                     'label' => $customQuestion->getLocalizedTitle(),
                     'description' => $customQuestion->getLocalizedDescription(),
@@ -60,7 +60,7 @@ class CustomQuestions extends FormComponent
                 ]
             ),
             CustomQuestion::CUSTOM_QUESTION_TYPE_TEXTAREA => new FieldRichTextarea(
-                $customQuestion->getLocalizedTitle(),
+                $this->toKebabCase($customQuestion->getLocalizedTitle()),
                 [
                     'label' => $customQuestion->getLocalizedTitle(),
                     'description' => $customQuestion->getLocalizedDescription(),
@@ -69,7 +69,7 @@ class CustomQuestions extends FormComponent
                 ]
             ),
             CustomQuestion::CUSTOM_QUESTION_TYPE_CHECKBOXES => new FieldOptions(
-                $customQuestion->getLocalizedTitle(),
+                $this->toKebabCase($customQuestion->getLocalizedTitle()),
                 [
                     'label' => $customQuestion->getLocalizedTitle(),
                     'description' => $customQuestion->getLocalizedDescription(),
@@ -79,7 +79,7 @@ class CustomQuestions extends FormComponent
                 ]
             ),
             CustomQuestion::CUSTOM_QUESTION_TYPE_RADIO_BUTTONS => new FieldOptions(
-                $customQuestion->getLocalizedTitle(),
+                $this->toKebabCase($customQuestion->getLocalizedTitle()),
                 [
                     'label' => $customQuestion->getLocalizedTitle(),
                     'description' => $customQuestion->getLocalizedDescription(),
@@ -89,7 +89,7 @@ class CustomQuestions extends FormComponent
                 ]
             ),
             CustomQuestion::CUSTOM_QUESTION_TYPE_DROP_DOWN_BOX => new FieldSelect(
-                $customQuestion->getLocalizedTitle(),
+                $this->toKebabCase($customQuestion->getLocalizedTitle()),
                 [
                     'label' => $customQuestion->getLocalizedTitle(),
                     'description' => $customQuestion->getLocalizedDescription(),
@@ -100,5 +100,10 @@ class CustomQuestions extends FormComponent
         ];
 
         return $fieldComponents[$customQuestion->getQuestionType()];
+    }
+
+    private function toKebabCase(string $string): string
+    {
+        return strtolower(str_replace(' ', '-', $string));
     }
 }
