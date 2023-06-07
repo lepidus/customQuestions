@@ -2,17 +2,18 @@
 
 namespace APP\plugins\generic\customQuestions;
 
+use PKP\plugins\Hook;
 use APP\core\Application;
-use APP\plugins\generic\customQuestions\classes\CustomQuestionsSectionHookCallbacks;
-use APP\plugins\generic\customQuestions\controllers\grid\CustomQuestionGridHandler;
-use APP\plugins\generic\customQuestions\controllers\listbuilder\CustomQuestionResponseItemListbuilderHandler;
-use APP\template\TemplateManager;
-use Illuminate\Database\Migrations\Migration;
 use PKP\core\JSONMessage;
 use PKP\linkAction\LinkAction;
-use PKP\linkAction\request\AjaxModal;
 use PKP\plugins\GenericPlugin;
-use PKP\plugins\Hook;
+use APP\template\TemplateManager;
+use PKP\linkAction\request\AjaxModal;
+use Illuminate\Database\Migrations\Migration;
+use APP\plugins\generic\customQuestions\controllers\grid\CustomQuestionGridHandler;
+use APP\plugins\generic\customQuestions\classes\CustomQuestionsSectionHookCallbacks;
+use APP\plugins\generic\customQuestions\api\v1\customQuestionResponses\CustomQuestionResponseHandler;
+use APP\plugins\generic\customQuestions\controllers\listbuilder\CustomQuestionResponseItemListbuilderHandler;
 
 class CustomQuestionsPlugin extends GenericPlugin
 {
@@ -28,6 +29,7 @@ class CustomQuestionsPlugin extends GenericPlugin
             );
 
             Hook::add('LoadComponentHandler', [$this, 'setupGridHandler']);
+            Hook::add('Dispatcher::dispatch', [$this, 'setupAPIHandler']);
             Hook::add('Schema::get::customQuestion', [$this, 'addCustomQuestionSchema']);
         }
 
@@ -86,6 +88,28 @@ class CustomQuestionsPlugin extends GenericPlugin
             return true;
         }
         return false;
+    }
+
+    public function setupAPIHandler(string $hookname, array $args): void
+    {
+        $request = $args[0];
+        $router = $request->getRouter();
+
+        if (!($router instanceof \PKP\core\APIRouter)) {
+            return;
+        }
+
+        if (str_contains($request->getRequestPath(), 'api/v1/customQuestionResponses')) {
+            $handler = new CustomQuestionResponseHandler();
+        }
+
+        if (!isset($handler)) {
+            return;
+        }
+
+        $router->setHandler($handler);
+        $handler->getApp()->run();
+        exit;
     }
 
     public function getActions($request, $actionArgs): array
