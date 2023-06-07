@@ -3,11 +3,13 @@
 namespace APP\plugins\generic\customQuestions\classes;
 
 use APP\core\Application;
+use APP\core\Request;
 use APP\pages\submission\SubmissionHandler;
 use APP\plugins\generic\customQuestions\classes\components\forms\CustomQuestions;
 use APP\plugins\generic\customQuestions\classes\customQuestion\DAO;
 use APP\plugins\generic\customQuestions\CustomQuestionsPlugin;
 use APP\submission\Submission;
+use PKP\context\Context;
 use PKP\components\forms\FormComponent;
 
 class CustomQuestionsSectionHookCallbacks
@@ -43,17 +45,12 @@ class CustomQuestionsSectionHookCallbacks
             return false;
         }
 
-        $supportedSubmissionLocales = $request->getContext()->getSupportedSubmissionLocaleNames();
-        $formLocales = array_map(
-            fn (string $locale, string $name) => ['key' => $locale, 'label' => $name],
-            array_keys($supportedSubmissionLocales),
-            $supportedSubmissionLocales
-        );
-
+        $apiUrl = $this->getCustomQuestionResponseApiUrl($request);
+        $formLocales = $this->getFormLocales($request->getContext());
         $customQuestionDAO = app(DAO::class);
         $customQuestions = $customQuestionDAO->getByContextId($request->getContext()->getId());
 
-        $customQuestionsForm = $this->getCustomQuestionsForm($formLocales, $customQuestions->toArray());
+        $customQuestionsForm = $this->getCustomQuestionsForm($apiUrl, $formLocales, $customQuestions->toArray());
 
         $this->removeButtonFromForm($customQuestionsForm);
         $formConfig = $this->getLocalizedForm($customQuestionsForm, $submission, $formLocales);
@@ -80,9 +77,31 @@ class CustomQuestionsSectionHookCallbacks
         return false;
     }
 
-    private function getCustomQuestionsForm(array $locales, array $customQuestions): CustomQuestions
+    private function getCustomQuestionResponseApiUrl(Request $request): string
     {
-        return new CustomQuestions('apiUrl', $locales, $customQuestions);
+        return $request
+            ->getDispatcher()
+            ->url(
+                $request,
+                Application::ROUTE_API,
+                $request->getContext()->getPath(),
+                'customQuestionResponses'
+            );
+    }
+
+    private function getFormLocales(Context $context): array
+    {
+        $supportedSubmissionLocales = $context->getSupportedSubmissionLocaleNames();
+        return array_map(
+            fn (string $locale, string $name) => ['key' => $locale, 'label' => $name],
+            array_keys($supportedSubmissionLocales),
+            $supportedSubmissionLocales
+        );
+    }
+
+    private function getCustomQuestionsForm(string $action, array $locales, array $customQuestions): CustomQuestions
+    {
+        return new CustomQuestions($action, $locales, $customQuestions);
     }
 
     private function removeButtonFromForm(FormComponent $form): void

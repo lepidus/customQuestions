@@ -13,21 +13,31 @@ class CustomQuestionResponseHandler extends APIHandler
 {
     public function __construct()
     {
+        $roles = [
+            Role::ROLE_ID_MANAGER,
+            Role::ROLE_ID_SUB_EDITOR,
+            Role::ROLE_ID_ASSISTANT,
+            Role::ROLE_ID_AUTHOR
+        ];
+
         $this->_handlerPath = 'customQuestionResponses';
         $this->_endpoints = [
             'GET' => [
                 [
                     'pattern' => $this->getEndpointPattern(),
                     'handler' => [$this, 'get'],
-                    'roles' => [
-                        Role::ROLE_ID_MANAGER,
-                        Role::ROLE_ID_SUB_EDITOR,
-                        Role::ROLE_ID_ASSISTANT,
-                        Role::ROLE_ID_AUTHOR
-                    ],
+                    'roles' => $roles,
+                ],
+            ],
+            'PUT' => [
+                [
+                    'pattern' => $this->getEndpointPattern(),
+                    'handler' => [$this, 'edit'],
+                    'roles' => $roles,
                 ],
             ],
         ];
+
         parent::__construct();
     }
 
@@ -41,6 +51,11 @@ class CustomQuestionResponseHandler extends APIHandler
     }
 
     public function get(Request $slimRequest, APIResponse $response, array $args): APIResponse
+    {
+        return $response->withJson(['message' => 'ok'], 200);
+    }
+
+    public function edit(Request $slimRequest, APIResponse $response, array $args): APIResponse
     {
         return $response->withJson(['message' => 'ok'], 200);
     }
