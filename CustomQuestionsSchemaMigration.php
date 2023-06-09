@@ -55,6 +55,7 @@ class CustomQuestionsSchemaMigration extends Migration
             $table->index(['submission_id'], 'custom_question_responses_submission_id');
 
             $table->index(['custom_question_id', 'submission_id'], 'custom_question_responses_unique');
+            $table->unique(['custom_question_id', 'submission_id'], 'custom_question_responses_pkey');
         });
     }
 }

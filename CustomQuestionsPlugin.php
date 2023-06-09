@@ -31,6 +31,7 @@ class CustomQuestionsPlugin extends GenericPlugin
             Hook::add('LoadComponentHandler', [$this, 'setupGridHandler']);
             Hook::add('Dispatcher::dispatch', [$this, 'setupAPIHandler']);
             Hook::add('Schema::get::customQuestion', [$this, 'addCustomQuestionSchema']);
+            Hook::add('Schema::get::customQuestionResponse', [$this, 'addCustomQuestionResponseSchema']);
         }
 
         return $success;
@@ -54,11 +55,23 @@ class CustomQuestionsPlugin extends GenericPlugin
     public function addCustomQuestionSchema(string $hookName, array $params): bool
     {
         $schema = & $params[0];
+        $schema = $this->getJsonSchema('customQuestion');
+        return true;
+    }
 
+    public function addCustomQuestionResponseSchema(string $hookName, array $params): bool
+    {
+        $schema = & $params[0];
+        $schema = $this->getJsonSchema('customQuestionResponse');
+        return true;
+    }
+
+    private function getJsonSchema(string $schemaName): ?\stdClass
+    {
         $schemaFile = sprintf(
             '%s/plugins/generic/customQuestions/schemas/%s.json',
             BASE_SYS_DIR,
-            'customQuestion'
+            $schemaName
         );
         if (file_exists($schemaFile)) {
             $schema = json_decode(file_get_contents($schemaFile));
@@ -71,7 +84,7 @@ class CustomQuestionsPlugin extends GenericPlugin
                 );
             }
         }
-        return true;
+        return $schema;
     }
 
     public function setupGridHandler(string $hookName, array $params): bool

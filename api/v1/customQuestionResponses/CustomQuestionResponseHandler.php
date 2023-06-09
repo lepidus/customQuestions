@@ -2,6 +2,8 @@
 
 namespace APP\plugins\generic\customQuestions\api\v1\customQuestionResponses;
 
+use APP\plugins\generic\customQuestions\classes\customQuestion\DAO as CustomQuestionDAO;
+use APP\plugins\generic\customQuestions\classes\customQuestionResponse\DAO as CustomQuestionResponseDAO;
 use PKP\handler\APIHandler;
 use PKP\security\Role;
 use Slim\Http\Request;
@@ -31,7 +33,7 @@ class CustomQuestionResponseHandler extends APIHandler
             ],
             'PUT' => [
                 [
-                    'pattern' => $this->getEndpointPattern(),
+                    'pattern' => $this->getEndpointPattern() . '/{submissionId:\d+}',
                     'handler' => [$this, 'edit'],
                     'roles' => $roles,
                 ],
@@ -57,6 +59,23 @@ class CustomQuestionResponseHandler extends APIHandler
 
     public function edit(Request $slimRequest, APIResponse $response, array $args): APIResponse
     {
+        $params = $slimRequest->getParsedBody();
+        $submissionId = $args['submissionId'];
+
+        foreach ($slimRequest->getParsedBody() as $id => $value) {
+            $customQuestionId = str_replace('customQuestion-', '', $id);
+            $customQuestionDAO = app(CustomQuestionDAO::class);
+            $customQuestion = $customQuestionDAO->get($customQuestionId);
+
+            $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
+            $customQuestionResponse = $customQuestionResponseDAO->newDataObject();
+            $customQuestionResponse->setSubmissionId($submissionId);
+            $customQuestionResponse->setCustomQuestionId($customQuestionId);
+            $customQuestionResponse->setValue($value);
+            $customQuestionResponse->setResponseType($customQuestion->getCustomQuestionResponseType());
+            $customQuestionResponseDAO->insert($customQuestionResponse);
+        }
+
         return $response->withJson(['message' => 'ok'], 200);
     }
 }

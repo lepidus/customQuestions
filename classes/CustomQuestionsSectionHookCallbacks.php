@@ -45,7 +45,7 @@ class CustomQuestionsSectionHookCallbacks
             return false;
         }
 
-        $apiUrl = $this->getCustomQuestionResponseApiUrl($request);
+        $apiUrl = $this->getCustomQuestionResponseApiUrl($request, $submission);
         $formLocales = $this->getFormLocales($request->getContext());
         $customQuestionDAO = app(DAO::class);
         $customQuestions = $customQuestionDAO->getByContextId($request->getContext()->getId());
@@ -77,7 +77,7 @@ class CustomQuestionsSectionHookCallbacks
         return false;
     }
 
-    private function getCustomQuestionResponseApiUrl(Request $request): string
+    private function getCustomQuestionResponseApiUrl(Request $request, Submission $submission): string
     {
         return $request
             ->getDispatcher()
@@ -85,7 +85,7 @@ class CustomQuestionsSectionHookCallbacks
                 $request,
                 Application::ROUTE_API,
                 $request->getContext()->getPath(),
-                'customQuestionResponses'
+                'customQuestionResponses' . '/' . $submission->getId(),
             );
     }
 
