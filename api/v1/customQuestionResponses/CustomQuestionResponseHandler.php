@@ -50,8 +50,9 @@ class CustomQuestionResponseHandler extends APIHandler
         $params = $slimRequest->getParsedBody();
         $submissionId = $args['submissionId'];
 
-        foreach ($slimRequest->getParsedBody() as $id => $value) {
-            $customQuestionId = str_replace('customQuestion-', '', $id);
+        foreach ($slimRequest->getParsedBody() as $fieldName => $value) {
+            $fieldNameSplitted = preg_split('/-/', $fieldName);
+            $customQuestionId = end($fieldNameSplitted);
             $customQuestionDAO = app(CustomQuestionDAO::class);
             $customQuestion = $customQuestionDAO->get($customQuestionId);
 

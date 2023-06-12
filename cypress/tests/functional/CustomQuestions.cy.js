@@ -60,6 +60,7 @@ describe('Custom Quetions plugin tests', function () {
 		cy.get('a[id*="customquestionsplugin-settings"]').click();
 		cy.get('tr[id*="customquestiongrid-row"]:contains("Here is my custom question.") a.show_extras').click();
 		cy.get('tr[id*="customquestiongrid-row"]:contains("Here is my custom question.")').next().contains('Edit').click();
+		cy.get('input[name="title[en]"]').clear();
 		cy.get('input[name="title[en]"]').type('Edited custom question.');
 		cy.get('textarea[name="description[en]"]').then((node) => {
 			cy.setTinyMceContent(node.attr('id'), 'Edited question description.');
@@ -155,14 +156,14 @@ describe('Custom Quetions plugin tests', function () {
 					cy.get(`label[for^="customQuestions-${toKebabCase(customQuestion.title)}"]`).children('span').should('have.class', 'pkpFormFieldLabel__required');
 				}
 			} else {
-				cy.get(`input[name="${toKebabCase(customQuestion.title)}"]`).parents('fieldset').children('legend').contains(customQuestion.title);
+				cy.get(`input[name^="${toKebabCase(customQuestion.title)}"]`).parents('fieldset').children('legend').contains(customQuestion.title);
 				if (customQuestion.required) {
-					cy.get(`input[name="${toKebabCase(customQuestion.title)}"]`).parents('fieldset').children('legend').children('span').should('have.class', 'pkpFormFieldLabel__required');
+					cy.get(`input[name^="${toKebabCase(customQuestion.title)}"]`).parents('fieldset').children('legend').children('span').should('have.class', 'pkpFormFieldLabel__required');
 				}
 			}
 
 			if (customQuestion.description) {
-				cy.get(`div[id^="customQuestions-${toKebabCase(customQuestion.title)}-description"]`).contains(customQuestion.description);
+				cy.get(`div[id^="customQuestions-${toKebabCase(customQuestion.title)}"][id*="description"]`).contains(customQuestion.description);
 			}
 
 			if (customQuestion.type === '1') {
@@ -174,7 +175,7 @@ describe('Custom Quetions plugin tests', function () {
 				cy.get(`input[name^="${toKebabCase(customQuestion.title)}"]`).parents('.pkpFormField--sizelarge');
 			}
 			if (customQuestion.type === '3') {
-				cy.get(`textarea[id^="customQuestions-${toKebabCase(customQuestion.title)}-control-en"]`).should('exist');
+				cy.get(`textarea[id^="customQuestions-${toKebabCase(customQuestion.title)}"][id*="-control-en"]`).should('exist');
 			}
 			if (customQuestion.type === '4') {
 				cy.get(`input[name^="${toKebabCase(customQuestion.title)}"]`).should('have.attr', 'type', 'checkbox');

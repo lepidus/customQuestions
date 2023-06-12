@@ -45,9 +45,7 @@ class CustomQuestions extends FormComponent
             $submissionId
         );
 
-        error_log(print_r($customQuestionResponse ? $customQuestionResponse->getValue() : null, true));
-
-        $fieldName = 'customQuestion-' . $customQuestion->getId();
+        $fieldName = $this->toKebabCase($customQuestion->getLocalizedTitle()) . '-' . $customQuestion->getId();
         $fieldComponents = [
             CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD => new FieldText(
                 $fieldName,
@@ -115,5 +113,10 @@ class CustomQuestions extends FormComponent
         ];
 
         return $fieldComponents[$customQuestion->getQuestionType()];
+    }
+
+    private function toKebabCase(string $text): string
+    {
+        return strtolower(str_replace(' ', '-', $text));
     }
 }
