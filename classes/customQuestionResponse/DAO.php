@@ -41,6 +41,16 @@ class DAO extends EntityDAO
         return $row ? $this->fromRow($row) : null;
     }
 
+    public function fromRow(object $row): CustomQuestionResponse
+    {
+        $customQuestionResponse = parent::fromRow($row);
+        if (@unserialize($row->response_value)) {
+            $customQuestionResponse->setValue(unserialize($row->response_value));
+        }
+
+        return $customQuestionResponse;
+    }
+
     public function insert(CustomQuestionResponse $customQuestionResponse): int
     {
         return parent::_insert($customQuestionResponse);

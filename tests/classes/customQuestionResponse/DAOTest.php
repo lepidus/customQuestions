@@ -40,15 +40,31 @@ class DAOTest extends DatabaseTestCase
 
     protected function getAffectedTables(): array
     {
-        return ['custom_question_responses', 'submissions', 'custom_questions', 'custom_question_settings'];
+        return [
+            'publications',
+            'publication_settings',
+            'submissions',
+            'submission_settings',
+            'custom_questions',
+            'custom_question_responses',
+            'custom_question_settings',
+        ];
     }
 
     private function createTestSubmission(): int
     {
         $submission = Repo::submission()->newDataObject();
         $submission->setData('contextId', 1);
-        $submission->setData('currentPublicationId', null);
-        return Repo::submission()->dao->insert($submission);
+        Repo::submission()->dao->insert($submission);
+
+        $publication = Repo::publication()->newDataObject();
+        $publication->setData('submissionId', $submission->getId());
+        Repo::publication()->dao->insert($publication);
+
+        $submission->setData('currentPublicationId', $publication->getId());
+        Repo::submission()->dao->update($submission);
+
+        return $submission->getId();
     }
 
     public function testCreateNewDataObject(): void
@@ -73,8 +89,8 @@ class DAOTest extends DatabaseTestCase
         $customQuestionResponse = $customQuestionResponseDAO->newDataObject();
         $customQuestionResponse->setSubmissionId($submissionId);
         $customQuestionResponse->setCustomQuestionId($customQuestion->getId());
-        $customQuestionResponse->setValue('question response');
-        $customQuestionResponse->setResponseType('text');
+        $customQuestionResponse->setValue(['en' => 'question response']);
+        $customQuestionResponse->setResponseType('string');
         $customQuestionResponseDAO->insert($customQuestionResponse);
 
         $fetchedCustomQuestionResponse = $customQuestionResponseDAO->get($customQuestionResponse->getId());
@@ -82,8 +98,8 @@ class DAOTest extends DatabaseTestCase
             'id' => $customQuestionResponse->getId(),
             'submissionId' => $submissionId,
             'customQuestionId' => $customQuestion->getId(),
-            'value' => 'question response',
-            'responseType' => 'text'
+            'value' => ['en' => 'question response'],
+            'responseType' => 'string'
         ], $fetchedCustomQuestionResponse->_data);
 
         $customQuestionResponse->setValue(['option1', 'option2']);
@@ -98,7 +114,7 @@ class DAOTest extends DatabaseTestCase
             'id' => $customQuestionResponse->getId(),
             'submissionId' => $submissionId,
             'customQuestionId' => $customQuestion->getId(),
-            'value' => serialize(['option1', 'option2']),
+            'value' => ['option1', 'option2'],
             'responseType' => 'array'
         ], $fetchedCustomQuestionResponse->_data);
 

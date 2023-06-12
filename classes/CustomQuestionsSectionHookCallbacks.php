@@ -9,8 +9,8 @@ use APP\plugins\generic\customQuestions\classes\components\forms\CustomQuestions
 use APP\plugins\generic\customQuestions\classes\customQuestion\DAO;
 use APP\plugins\generic\customQuestions\CustomQuestionsPlugin;
 use APP\submission\Submission;
-use PKP\context\Context;
 use PKP\components\forms\FormComponent;
+use PKP\context\Context;
 
 class CustomQuestionsSectionHookCallbacks
 {
@@ -50,7 +50,12 @@ class CustomQuestionsSectionHookCallbacks
         $customQuestionDAO = app(DAO::class);
         $customQuestions = $customQuestionDAO->getByContextId($request->getContext()->getId());
 
-        $customQuestionsForm = $this->getCustomQuestionsForm($apiUrl, $formLocales, $customQuestions->toArray());
+        $customQuestionsForm = $this->getCustomQuestionsForm(
+            $apiUrl,
+            $formLocales,
+            $customQuestions->toArray(),
+            $submission->getId()
+        );
 
         $this->removeButtonFromForm($customQuestionsForm);
         $formConfig = $this->getLocalizedForm($customQuestionsForm, $submission, $formLocales);
@@ -99,9 +104,13 @@ class CustomQuestionsSectionHookCallbacks
         );
     }
 
-    private function getCustomQuestionsForm(string $action, array $locales, array $customQuestions): CustomQuestions
-    {
-        return new CustomQuestions($action, $locales, $customQuestions);
+    private function getCustomQuestionsForm(
+        string $action,
+        array $locales,
+        array $customQuestions,
+        int $submissionId
+    ): CustomQuestions {
+        return new CustomQuestions($action, $locales, $customQuestions, $submissionId);
     }
 
     private function removeButtonFromForm(FormComponent $form): void

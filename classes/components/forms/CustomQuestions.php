@@ -3,6 +3,7 @@
 namespace APP\plugins\generic\customQuestions\classes\components\forms;
 
 use APP\plugins\generic\customQuestions\classes\customQuestion\CustomQuestion;
+use APP\plugins\generic\customQuestions\classes\customQuestionResponse\DAO as CustomQuestionResponseDAO;
 use PKP\components\forms\Field;
 use PKP\components\forms\FieldOptions;
 use PKP\components\forms\FieldRichTextarea;
@@ -15,18 +16,18 @@ class CustomQuestions extends FormComponent
     public $id = 'customQuestions';
     public $method = 'PUT';
 
-    public function __construct(string $action, array $locales, array $customQuestions)
+    public function __construct(string $action, array $locales, array $customQuestions, int $submissionId)
     {
         $this->action = $action;
         $this->locales = $locales;
 
         foreach ($customQuestions as $customQuestion) {
-            $fieldComponent = $this->getCustomQuestionFieldComponent($customQuestion);
+            $fieldComponent = $this->getCustomQuestionFieldComponent($customQuestion, $submissionId);
             $this->addField($fieldComponent);
         }
     }
 
-    private function getCustomQuestionFieldComponent(CustomQuestion $customQuestion): Field
+    private function getCustomQuestionFieldComponent(CustomQuestion $customQuestion, int $submissionId): Field
     {
         $possibleResponses = [];
         if ($customQuestion->getLocalizedPossibleResponses()) {
@@ -38,8 +39,15 @@ class CustomQuestions extends FormComponent
             }
         }
 
-        $fieldName = 'customQuestion-' . $customQuestion->getId();
+        $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
+        $customQuestionResponse = $customQuestionResponseDAO->getByCustomQuestionId(
+            $customQuestion->getId(),
+            $submissionId
+        );
 
+        error_log(print_r($customQuestionResponse ? $customQuestionResponse->getValue() : null, true));
+
+        $fieldName = 'customQuestion-' . $customQuestion->getId();
         $fieldComponents = [
             CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD => new FieldText(
                 $fieldName,
@@ -49,6 +57,7 @@ class CustomQuestions extends FormComponent
                     'isMultilingual' => true,
                     'isRequired' => $customQuestion->getRequired(),
                     'size' => 'small',
+                    'value' => $customQuestionResponse ? $customQuestionResponse->getValue() : null,
                 ]
             ),
             CustomQuestion::CUSTOM_QUESTION_TYPE_TEXT_FIELD => new FieldText(
@@ -59,6 +68,7 @@ class CustomQuestions extends FormComponent
                     'isMultilingual' => true,
                     'isRequired' => $customQuestion->getRequired(),
                     'size' => 'large',
+                    'value' => $customQuestionResponse ? $customQuestionResponse->getValue() : null,
                 ]
             ),
             CustomQuestion::CUSTOM_QUESTION_TYPE_TEXTAREA => new FieldRichTextarea(
@@ -68,6 +78,7 @@ class CustomQuestions extends FormComponent
                     'description' => $customQuestion->getLocalizedDescription(),
                     'isMultilingual' => true,
                     'isRequired' => $customQuestion->getRequired(),
+                    'value' => $customQuestionResponse ? $customQuestionResponse->getValue() : null,
                 ]
             ),
             CustomQuestion::CUSTOM_QUESTION_TYPE_CHECKBOXES => new FieldOptions(
@@ -77,7 +88,7 @@ class CustomQuestions extends FormComponent
                     'description' => $customQuestion->getLocalizedDescription(),
                     'isRequired' => $customQuestion->getRequired(),
                     'options' => $possibleResponses,
-                    'value' => []
+                    'value' => $customQuestionResponse ? $customQuestionResponse->getValue() : []
                 ]
             ),
             CustomQuestion::CUSTOM_QUESTION_TYPE_RADIO_BUTTONS => new FieldOptions(
@@ -88,6 +99,7 @@ class CustomQuestions extends FormComponent
                     'type' => 'radio',
                     'isRequired' => $customQuestion->getRequired(),
                     'options' => $possibleResponses,
+                    'value' => $customQuestionResponse ? $customQuestionResponse->getValue() : []
                 ]
             ),
             CustomQuestion::CUSTOM_QUESTION_TYPE_DROP_DOWN_BOX => new FieldSelect(
@@ -97,6 +109,7 @@ class CustomQuestions extends FormComponent
                     'description' => $customQuestion->getLocalizedDescription(),
                     'isRequired' => $customQuestion->getRequired(),
                     'options' => $possibleResponses,
+                    'value' => $customQuestionResponse ? $customQuestionResponse->getValue() : []
                 ]
             ),
         ];
