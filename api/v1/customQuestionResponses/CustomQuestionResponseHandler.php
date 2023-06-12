@@ -24,13 +24,6 @@ class CustomQuestionResponseHandler extends APIHandler
 
         $this->_handlerPath = 'customQuestionResponses';
         $this->_endpoints = [
-            'GET' => [
-                [
-                    'pattern' => $this->getEndpointPattern(),
-                    'handler' => [$this, 'get'],
-                    'roles' => $roles,
-                ],
-            ],
             'PUT' => [
                 [
                     'pattern' => $this->getEndpointPattern() . '/{submissionId:\d+}',
@@ -50,11 +43,6 @@ class CustomQuestionResponseHandler extends APIHandler
         $this->addPolicy(new ContextAccessPolicy($request, $roleAssignments));
 
         return parent::authorize($request, $args, $roleAssignments);
-    }
-
-    public function get(Request $slimRequest, APIResponse $response, array $args): APIResponse
-    {
-        return $response->withJson(['message' => 'ok'], 200);
     }
 
     public function edit(Request $slimRequest, APIResponse $response, array $args): APIResponse
