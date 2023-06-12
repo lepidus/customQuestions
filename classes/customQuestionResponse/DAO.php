@@ -31,6 +31,16 @@ class DAO extends EntityDAO
         return $row ? $this->fromRow($row) : null;
     }
 
+    public function getByCustomQuestionId(int $customQuestionId, int $submissionId): ?CustomQuestionResponse
+    {
+        $row = DB::table('custom_question_responses as cqr')
+            ->where('cqr.custom_question_id', $customQuestionId)
+            ->where('cqr.submission_id', $submissionId)
+            ->first();
+
+        return $row ? $this->fromRow($row) : null;
+    }
+
     public function insert(CustomQuestionResponse $customQuestionResponse): int
     {
         return parent::_insert($customQuestionResponse);

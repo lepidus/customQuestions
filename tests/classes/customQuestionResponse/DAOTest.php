@@ -40,7 +40,7 @@ class DAOTest extends DatabaseTestCase
 
     protected function getAffectedTables(): array
     {
-        return ['custom_question_responses', 'submissions'];
+        return ['custom_question_responses', 'submissions', 'custom_questions', 'custom_question_settings'];
     }
 
     private function createTestSubmission(): int
@@ -90,7 +90,10 @@ class DAOTest extends DatabaseTestCase
         $customQuestionResponse->setResponseType('array');
         $customQuestionResponseDAO->update($customQuestionResponse);
 
-        $fetchedCustomQuestionResponse = $customQuestionResponseDAO->get($customQuestionResponse->getId());
+        $fetchedCustomQuestionResponse = $customQuestionResponseDAO->getByCustomQuestionId(
+            $customQuestion->getId(),
+            $submissionId
+        );
         self::assertEquals([
             'id' => $customQuestionResponse->getId(),
             'submissionId' => $submissionId,
