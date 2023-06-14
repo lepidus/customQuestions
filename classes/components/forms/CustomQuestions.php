@@ -3,7 +3,7 @@
 namespace APP\plugins\generic\customQuestions\classes\components\forms;
 
 use APP\plugins\generic\customQuestions\classes\customQuestion\CustomQuestion;
-use APP\plugins\generic\customQuestions\classes\customQuestionResponse\DAO as CustomQuestionResponseDAO;
+use APP\plugins\generic\customQuestions\classes\customQuestionResponse\CustomQuestionResponse;
 use PKP\components\forms\Field;
 use PKP\components\forms\FieldOptions;
 use PKP\components\forms\FieldRichTextarea;
@@ -16,19 +16,24 @@ class CustomQuestions extends FormComponent
     public $id = 'customQuestions';
     public $method = 'PUT';
 
-    public function __construct(string $action, array $locales, array $customQuestions, int $submissionId)
+    public function __construct(string $action, array $locales, array $customQuestions, array $customQuestionResponses)
     {
         $this->action = $action;
         $this->locales = $locales;
 
         foreach ($customQuestions as $customQuestion) {
-            $fieldComponent = $this->getCustomQuestionFieldComponent($customQuestion, $submissionId);
+            $fieldComponent = $this->getCustomQuestionFieldComponent(
+                $customQuestion,
+                $customQuestionResponses[$customQuestion->getId()]
+            );
             $this->addField($fieldComponent);
         }
     }
 
-    private function getCustomQuestionFieldComponent(CustomQuestion $customQuestion, int $submissionId): Field
-    {
+    private function getCustomQuestionFieldComponent(
+        CustomQuestion $customQuestion,
+        ?CustomQuestionResponse $customQuestionResponse
+    ): Field {
         $possibleResponses = [];
         if ($customQuestion->getLocalizedPossibleResponses()) {
             foreach ($customQuestion->getLocalizedPossibleResponses() as $index => $responseItem) {
@@ -38,12 +43,6 @@ class CustomQuestions extends FormComponent
                 ];
             }
         }
-
-        $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
-        $customQuestionResponse = $customQuestionResponseDAO->getByCustomQuestionId(
-            $customQuestion->getId(),
-            $submissionId
-        );
 
         $fieldName = $this->toKebabCase($customQuestion->getLocalizedTitle()) . '-' . $customQuestion->getId();
         $fieldComponents = [
