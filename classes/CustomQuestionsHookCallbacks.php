@@ -6,13 +6,14 @@ use APP\core\Application;
 use APP\core\Request;
 use APP\pages\submission\SubmissionHandler;
 use APP\plugins\generic\customQuestions\classes\components\forms\CustomQuestions;
-use APP\plugins\generic\customQuestions\classes\customQuestion\DAO;
+use APP\plugins\generic\customQuestions\classes\customQuestion\DAO as CustomQuestionDAO;
+use APP\plugins\generic\customQuestions\classes\customQuestionResponse\DAO as CustomQuestionResponseDAO;
 use APP\plugins\generic\customQuestions\CustomQuestionsPlugin;
 use APP\submission\Submission;
 use PKP\components\forms\FormComponent;
 use PKP\context\Context;
 
-class CustomQuestionsSectionHookCallbacks
+class CustomQuestionsHookCallbacks
 {
     public $plugin;
 
@@ -21,7 +22,7 @@ class CustomQuestionsSectionHookCallbacks
         $this->plugin = $plugin;
     }
 
-    public function addToSubmissionWizardSteps(string $hookName, array $params): bool
+    public function addToDetailsStep(string $hookName, array $params): bool
     {
         $request = Application::get()->getRequest();
         $templateMgr = $params[0];
@@ -47,14 +48,27 @@ class CustomQuestionsSectionHookCallbacks
 
         $apiUrl = $this->getCustomQuestionResponseApiUrl($request, $submission);
         $formLocales = $this->getFormLocales($request->getContext());
-        $customQuestionDAO = app(DAO::class);
-        $customQuestions = $customQuestionDAO->getByContextId($request->getContext()->getId());
+
+        $customQuestions = [];
+        $customQuestionDAO = app(CustomQuestionDAO::class);
+        $customQuestionsIterator = $customQuestionDAO->getByContextId($request->getContext()->getId());
+
+        $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
+        $customQuestionResponses = [];
+
+        foreach ($customQuestionsIterator as $customQuestion) {
+            $customQuestions[] = $customQuestion;
+            $customQuestionResponses[$customQuestion->getId()] = $customQuestionResponseDAO->getByCustomQuestionId(
+                $customQuestion->getId(),
+                $submission->getId()
+            );
+        }
 
         $customQuestionsForm = $this->getCustomQuestionsForm(
             $apiUrl,
             $formLocales,
-            $customQuestions->toArray(),
-            $submission->getId()
+            $customQuestions,
+            $customQuestionResponses
         );
 
         $this->removeButtonFromForm($customQuestionsForm);
@@ -74,6 +88,10 @@ class CustomQuestionsSectionHookCallbacks
             return $step;
         }, $steps);
 
+        $templateMgr->assign([
+            'customQuestions' => $customQuestions,
+            'customQuestionResponses' => $customQuestionResponses,
+        ]);
 
         $templateMgr->setState([
             'steps' => $steps,
@@ -108,9 +126,9 @@ class CustomQuestionsSectionHookCallbacks
         string $action,
         array $locales,
         array $customQuestions,
-        int $submissionId
+        array $customQuestionResponses
     ): CustomQuestions {
-        return new CustomQuestions($action, $locales, $customQuestions, $submissionId);
+        return new CustomQuestions($action, $locales, $customQuestions, $customQuestionResponses);
     }
 
     private function removeButtonFromForm(FormComponent $form): void
@@ -140,5 +158,18 @@ class CustomQuestionsSectionHookCallbacks
         $config['supportedFormLocales'] = $supportedFormLocales;
 
         return $config;
+    }
+
+    public function addToReviewStep(string $hookName, array $params): bool
+    {
+        $step = $params[0]['step'];
+        $templateMgr = $params[1];
+        $output = &$params[2];
+
+        if ($step === 'details') {
+            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('review-customQuestions.tpl'));
+        }
+
+        return false;
     }
 }

@@ -2,18 +2,18 @@
 
 namespace APP\plugins\generic\customQuestions;
 
-use PKP\plugins\Hook;
 use APP\core\Application;
+use APP\plugins\generic\customQuestions\api\v1\customQuestionResponses\CustomQuestionResponseHandler;
+use APP\plugins\generic\customQuestions\classes\CustomQuestionsHookCallbacks;
+use APP\plugins\generic\customQuestions\controllers\grid\CustomQuestionGridHandler;
+use APP\plugins\generic\customQuestions\controllers\listbuilder\CustomQuestionResponseItemListbuilderHandler;
+use APP\template\TemplateManager;
+use Illuminate\Database\Migrations\Migration;
 use PKP\core\JSONMessage;
 use PKP\linkAction\LinkAction;
-use PKP\plugins\GenericPlugin;
-use APP\template\TemplateManager;
 use PKP\linkAction\request\AjaxModal;
-use Illuminate\Database\Migrations\Migration;
-use APP\plugins\generic\customQuestions\controllers\grid\CustomQuestionGridHandler;
-use APP\plugins\generic\customQuestions\classes\CustomQuestionsSectionHookCallbacks;
-use APP\plugins\generic\customQuestions\api\v1\customQuestionResponses\CustomQuestionResponseHandler;
-use APP\plugins\generic\customQuestions\controllers\listbuilder\CustomQuestionResponseItemListbuilderHandler;
+use PKP\plugins\GenericPlugin;
+use PKP\plugins\Hook;
 
 class CustomQuestionsPlugin extends GenericPlugin
 {
@@ -22,11 +22,9 @@ class CustomQuestionsPlugin extends GenericPlugin
         $success = parent::register($category, $path);
 
         if ($success && $this->getEnabled()) {
-            $customQuestionsSectionHookCallbacks = new CustomQuestionsSectionHookCallbacks($this);
-            Hook::add(
-                'TemplateManager::display',
-                [$customQuestionsSectionHookCallbacks, 'addToSubmissionWizardSteps']
-            );
+            $hookCallbacks = new CustomQuestionsHookCallbacks($this);
+            Hook::add('TemplateManager::display', [$hookCallbacks, 'addToDetailsStep']);
+            Hook::add('Template::SubmissionWizard::Section::Review', [$hookCallbacks, 'addToReviewStep']);
 
             Hook::add('LoadComponentHandler', [$this, 'setupGridHandler']);
             Hook::add('Dispatcher::dispatch', [$this, 'setupAPIHandler']);
