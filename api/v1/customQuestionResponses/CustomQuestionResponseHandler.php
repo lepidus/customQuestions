@@ -57,7 +57,10 @@ class CustomQuestionResponseHandler extends APIHandler
             $customQuestion = $customQuestionDAO->get($customQuestionId);
 
             $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
-            $customQuestionResponse = $customQuestionResponseDAO->getByCustomQuestionId($customQuestionId, $submissionId);
+            $customQuestionResponse = $customQuestionResponseDAO->getByCustomQuestionId(
+                $customQuestionId,
+                $submissionId
+            );
 
             if (is_null($customQuestionResponse)) {
                 $customQuestionResponse = $customQuestionResponseDAO->newDataObject();
