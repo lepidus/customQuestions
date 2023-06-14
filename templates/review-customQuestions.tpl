@@ -14,7 +14,11 @@
     <div class="submissionWizard__reviewPanel__body">
         {foreach from=$customQuestions item=$customQuestion}
             {assign var="customQuestionResponse" value=$customQuestionResponses[$customQuestion->getId()]}
-            {assign var="value" value=$customQuestionResponse->getValue()}
+            {if is_null($customQuestionResponse)}
+                {assign var="value" value=null}
+            {else}
+                {assign var="value" value=$customQuestionResponse->getValue()}
+            {/if}
             {if $customQuestion->getCustomQuestionResponseType() === 'string'}
                 {foreach from=$locales item=$locale key=$localeKey}
                     <div class="submissionWizard__reviewPanel__item">
