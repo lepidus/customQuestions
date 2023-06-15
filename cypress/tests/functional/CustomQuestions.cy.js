@@ -84,28 +84,31 @@ describe('Custom Quetions plugin tests', function () {
 	});
 
 	it('Displays custom questions in submission wizard', function () {
-		const labelTypes = ['1', '2', '3', '6'];
 		const customQuestions = [
 			{
 				title: 'Small text custom question',
 				description: 'A custom question with a small text field.',
 				required: true,
 				type: '1',
+				response: 'response',
 			},
 			{
 				title: 'Large text custom question',
 				type: '2',
+				response: 'Large text response',
 			},
 			{
 				title: 'Text Area custom question',
 				description: 'A custom question with a text area field.',
 				required: true,
 				type: '3',
+				response: 'Text area response',
 			},
 			{
 				title: 'Checkbox custom question',
 				type: '4',
 				possibleResponses: ['option 1', 'option 2', 'option 3'],
+				response: ['option 1', 'option 3'],
 			},
 			{
 				title: 'Radio input custom question',
@@ -113,11 +116,13 @@ describe('Custom Quetions plugin tests', function () {
 				required: true,
 				type: '5',
 				possibleResponses: ['option 1', 'option 2', 'option 3'],
+				response: 'option 2',
 			},
 			{
 				title: 'Select custom question',
 				type: '6',
 				possibleResponses: ['option 1', 'option 2', 'option 3'],
+				response: 'option 3',
 			},
 		];
 
@@ -134,6 +139,7 @@ describe('Custom Quetions plugin tests', function () {
 		customQuestions.forEach((customQuestion) => {
 			createCustomQuestion(customQuestion);
 		});
+		cy.logout();
 
 		cy.login('ccorino', null, 'publicknowledge');
 
@@ -150,48 +156,44 @@ describe('Custom Quetions plugin tests', function () {
 
 		cy.contains('Make a Submission: Details');
 		customQuestions.forEach((customQuestion) => {
-			if (labelTypes.includes(customQuestion.type)) {
-				cy.get(`label[for^="customQuestions-${toKebabCase(customQuestion.title)}"]`).contains(customQuestion.title);
-				if (customQuestion.required) {
-					cy.get(`label[for^="customQuestions-${toKebabCase(customQuestion.title)}"]`).children('span').should('have.class', 'pkpFormFieldLabel__required');
-				}
-			} else {
-				cy.get(`input[name^="${toKebabCase(customQuestion.title)}"]`).parents('fieldset').children('legend').contains(customQuestion.title);
-				if (customQuestion.required) {
-					cy.get(`input[name^="${toKebabCase(customQuestion.title)}"]`).parents('fieldset').children('legend').children('span').should('have.class', 'pkpFormFieldLabel__required');
-				}
-			}
+			let kebabTitle = toKebabCase(customQuestion.title);
+
+			cy.get(`label[for^="customQuestions-${kebabTitle}"], legend`).contains(customQuestion.title);
 
 			if (customQuestion.description) {
-				cy.get(`div[id^="customQuestions-${toKebabCase(customQuestion.title)}"][id*="description"]`).contains(customQuestion.description);
+				cy.get(`div[id^="customQuestions-${kebabTitle}"][id*="description"]`).contains(customQuestion.description);
+			}
+
+			if (customQuestion.required) {
+				cy.get(`label[for^="customQuestions-${kebabTitle}"] span, legend:contains(${customQuestion.title}) span`).should('have.class', 'pkpFormFieldLabel__required');
 			}
 
 			if (customQuestion.type === '1') {
-				cy.get(`input[name^="${toKebabCase(customQuestion.title)}"]`).should('have.attr', 'type', 'text');
-				cy.get(`input[name^="${toKebabCase(customQuestion.title)}"]`).parents('.pkpFormField--sizesmall');
+				cy.get(`input[name^="${kebabTitle}"]`).should('have.attr', 'type', 'text');
+				cy.get(`input[name^="${kebabTitle}"]`).parents('.pkpFormField--sizesmall');
 			}
 			if (customQuestion.type === '2') {
-				cy.get(`input[name^="${toKebabCase(customQuestion.title)}"]`).should('have.attr', 'type', 'text');
-				cy.get(`input[name^="${toKebabCase(customQuestion.title)}"]`).parents('.pkpFormField--sizelarge');
+				cy.get(`input[name^="${kebabTitle}"]`).should('have.attr', 'type', 'text');
+				cy.get(`input[name^="${kebabTitle}"]`).parents('.pkpFormField--sizelarge');
 			}
 			if (customQuestion.type === '3') {
-				cy.get(`textarea[id^="customQuestions-${toKebabCase(customQuestion.title)}"][id*="-control-en"]`).should('exist');
+				cy.get(`textarea[id^="customQuestions-${kebabTitle}"][id*="-control-en"]`).should('exist');
 			}
 			if (customQuestion.type === '4') {
-				cy.get(`input[name^="${toKebabCase(customQuestion.title)}"]`).should('have.attr', 'type', 'checkbox');
+				cy.get(`input[name^="${kebabTitle}"]`).should('have.attr', 'type', 'checkbox');
 				customQuestion.possibleResponses.forEach((response) => {
-					cy.get(`input[name^="${toKebabCase(customQuestion.title)}"]`).next().contains(response);
+					cy.get(`input[name^="${kebabTitle}"]`).next().contains(response);
 				});
 			}
 			if (customQuestion.type === '5') {
-				cy.get(`input[name^="${toKebabCase(customQuestion.title)}"]`).should('have.attr', 'type', 'radio');
+				cy.get(`input[name^="${kebabTitle}"]`).should('have.attr', 'type', 'radio');
 				customQuestion.possibleResponses.forEach((response) => {
-					cy.get(`input[name^="${toKebabCase(customQuestion.title)}"]`).next().contains(response);
+					cy.get(`input[name^="${kebabTitle}"]`).next().contains(response);
 				});
 			}
 			if (customQuestion.type === '6') {
 				customQuestion.possibleResponses.forEach((response) => {
-					cy.get(`select[id^="customQuestions-${toKebabCase(customQuestion.title)}"]`).children('option').contains(response);
+					cy.get(`select[id^="customQuestions-${kebabTitle}"]`).children('option').contains(response);
 				});
 			}
 		});
