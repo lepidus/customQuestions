@@ -50,6 +50,7 @@ class CustomQuestionResponseHandler extends APIHandler
         $params = $slimRequest->getParsedBody();
         $submissionId = $args['submissionId'];
 
+        $customQuestionResponses = [];
         foreach ($slimRequest->getParsedBody() as $fieldName => $value) {
             $fieldNameSplitted = preg_split('/-/', $fieldName);
             $customQuestionId = end($fieldNameSplitted);
@@ -72,8 +73,10 @@ class CustomQuestionResponseHandler extends APIHandler
             $customQuestionResponse->setValue($value);
             $customQuestionResponse->setResponseType($customQuestion->getCustomQuestionResponseType());
             $customQuestionResponseDAO->update($customQuestionResponse);
+
+            $customQuestionResponses[] = $customQuestionResponse->getAllData();
         }
 
-        return $response->withJson(['message' => 'ok'], 200);
+        return $response->withJson($customQuestionResponses, 200);
     }
 }
