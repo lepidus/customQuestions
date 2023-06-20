@@ -10,6 +10,7 @@ use APP\plugins\generic\customQuestions\classes\customQuestion\DAO as CustomQues
 use APP\plugins\generic\customQuestions\classes\customQuestionResponse\DAO as CustomQuestionResponseDAO;
 use APP\plugins\generic\customQuestions\CustomQuestionsPlugin;
 use APP\submission\Submission;
+use APP\template\TemplateManager;
 use PKP\components\forms\FormComponent;
 use PKP\context\Context;
 
@@ -46,29 +47,35 @@ class CustomQuestionsHookCallbacks
             return false;
         }
 
-        $apiUrl = $this->getCustomQuestionResponseApiUrl($request, $submission);
-        $formLocales = $this->getFormLocales($request->getContext());
+        $customQuestionDAO = app(CustomQuestionDAO::class);
+        $customQuestionsResult = $customQuestionDAO->getByContextId($request->getContext()->getId());
+        $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
 
         $customQuestions = [];
-        $customQuestionDAO = app(CustomQuestionDAO::class);
-        $customQuestionsIterator = $customQuestionDAO->getByContextId($request->getContext()->getId());
-
-        $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
         $customQuestionResponses = [];
-
-        foreach ($customQuestionsIterator as $customQuestion) {
-            $customQuestions[] = $customQuestion;
-            $customQuestionResponses[$customQuestion->getId()] = $customQuestionResponseDAO->getByCustomQuestionId(
+        foreach ($customQuestionsResult as $customQuestion) {
+            $customQuestionResponse = $customQuestionResponseDAO->getByCustomQuestionId(
                 $customQuestion->getId(),
                 $submission->getId()
             );
+            if ($customQuestionResponse) {
+                $customQuestionResponses[] = $customQuestionResponse->getAllData();
+            }
+            $customQuestions[] = $customQuestion;
         }
+
+        if (empty($customQuestions)) {
+            return false;
+        }
+
+        $apiUrl = $this->getCustomQuestionResponseApiUrl($request, $submission);
+        $formLocales = $this->getFormLocales($request->getContext());
 
         $customQuestionsForm = $this->getCustomQuestionsForm(
             $apiUrl,
             $formLocales,
             $customQuestions,
-            $customQuestionResponses
+            $submission->getId()
         );
 
         $this->removeButtonFromForm($customQuestionsForm);
@@ -90,12 +97,24 @@ class CustomQuestionsHookCallbacks
 
         $templateMgr->assign([
             'customQuestions' => $customQuestions,
-            'customQuestionResponses' => $customQuestionResponses,
         ]);
 
         $templateMgr->setState([
             'steps' => $steps,
+            'customQuestionResponses' => $customQuestionResponses,
+            'customQuestions' => array_map(function ($customQuestion) {
+                return $customQuestion->getAllData();
+            }, $customQuestions)
         ]);
+
+        $templateMgr->addJavaScript(
+            'custom-questions',
+            $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/js/CustomQuestions.js',
+            [
+                'contexts' => 'backend',
+                'priority' => TemplateManager::STYLE_SEQUENCE_LATE,
+            ]
+        );
 
         return false;
     }
@@ -126,9 +145,9 @@ class CustomQuestionsHookCallbacks
         string $action,
         array $locales,
         array $customQuestions,
-        array $customQuestionResponses
+        int $submissionId
     ): CustomQuestions {
-        return new CustomQuestions($action, $locales, $customQuestions, $customQuestionResponses);
+        return new CustomQuestions($action, $locales, $customQuestions, $submissionId);
     }
 
     private function removeButtonFromForm(FormComponent $form): void
