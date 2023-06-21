@@ -6,7 +6,7 @@ use APP\plugins\generic\customQuestions\classes\customQuestion\Repository as Cus
 
 class Repo extends \APP\facades\Repo
 {
-    public static function decision(): CustomQuestionRepository
+    public static function customQuestion(): CustomQuestionRepository
     {
         return app(CustomQuestionRepository::class);
     }
