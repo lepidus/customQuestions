@@ -5,7 +5,7 @@ namespace APP\plugins\generic\customQuestions\controllers\grid\form;
 use APP\core\Application;
 use APP\core\Request;
 use APP\plugins\generic\customQuestions\classes\customQuestion\CustomQuestion;
-use APP\plugins\generic\customQuestions\classes\customQuestion\DAO;
+use APP\plugins\generic\customQuestions\classes\facades\Repo;
 use APP\template\TemplateManager;
 use PKP\controllers\listbuilder\ListbuilderHandler;
 use PKP\form\Form;
@@ -60,9 +60,7 @@ class CustomQuestionForm extends Form
             return ;
         }
 
-        $request = Application::get()->getRequest();
-        $customQuestionDAO = app(DAO::class);
-        $customQuestion = $customQuestionDAO->get($this->customQuestionId);
+        $customQuestion = Repo::customQuestion()->get($this->customQuestionId);
         $this->_data = [
             'title' => $customQuestion->getData('title'),
             'description' => $customQuestion->getData('description'),
@@ -79,21 +77,21 @@ class CustomQuestionForm extends Form
 
     public function execute(...$functionArgs): int
     {
-        $customQuestionDAO = app(DAO::class);
         $request = Application::get()->getRequest();
 
         if ($this->customQuestionId) {
-            $customQuestion = $customQuestionDAO->get($this->customQuestionId);
+            $customQuestion = Repo::customQuestion()->get($this->customQuestionId);
         } else {
-            $customQuestion = $customQuestionDAO->newDataObject();
-            $customQuestion->setSequence(REALLY_BIG_NUMBER);
+            $customQuestion = Repo::customQuestion()->newDataObject(['sequence' => REALLY_BIG_NUMBER]);
         }
 
-        $customQuestion->setContextId($this->contextId);
-        $customQuestion->setTitle($this->getData('title'), null);
-        $customQuestion->setDescription($this->getData('description'), null);
-        $customQuestion->setRequired($this->getData('required') ? 1 : 0);
-        $customQuestion->setQuestionType($this->getData('questionType'));
+        $params = [
+            'contextId' => $this->contextId,
+            'title' => $this->getData('title'),
+            'description' => $this->getData('description'),
+            'required' => $this->getData('required') ? 1 : 0,
+            'questionType' => $this->getData('questionType'),
+        ];
 
         if (in_array($this->getData('questionType'), $customQuestion->getMultipleResponsesQuestionTypes())) {
             $this->setData('possibleResponsesProcessed', $customQuestion->getPossibleResponses(null));
@@ -104,15 +102,16 @@ class CustomQuestionForm extends Form
                 [$this, 'insertEntry'],
                 [$this, 'updateEntry']
             );
-            $customQuestion->setPossibleResponses($this->getData('possibleResponsesProcessed'));
+            $params['possibleResponses'] = $this->getData('possibleResponsesProcessed');
         } else {
-            $customQuestion->setPossibleResponses(null, null);
+            $params['possibleResponses'] = null;
         }
         if ($customQuestion->getId()) {
-            $customQuestionDAO->update($customQuestion);
+            Repo::customQuestion()->edit($customQuestion, $params);
         } else {
-            $this->customQuestionId = $customQuestionDAO->insert($customQuestion);
-            $customQuestionDAO->resequence($this->contextId);
+            $customQuestion->setAllData($params);
+            $this->customQuestionId = Repo::customQuestion()->add($customQuestion);
+            Repo::customQuestion()->dao->resequence($this->contextId);
         }
         parent::execute(...$functionArgs);
         return $this->customQuestionId;

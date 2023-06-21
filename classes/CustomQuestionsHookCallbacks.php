@@ -6,8 +6,8 @@ use APP\core\Application;
 use APP\core\Request;
 use APP\pages\submission\SubmissionHandler;
 use APP\plugins\generic\customQuestions\classes\components\forms\CustomQuestions;
-use APP\plugins\generic\customQuestions\classes\customQuestion\DAO as CustomQuestionDAO;
 use APP\plugins\generic\customQuestions\classes\customQuestionResponse\DAO as CustomQuestionResponseDAO;
+use APP\plugins\generic\customQuestions\classes\facades\Repo;
 use APP\plugins\generic\customQuestions\CustomQuestionsPlugin;
 use APP\submission\Submission;
 use APP\template\TemplateManager;
@@ -48,25 +48,28 @@ class CustomQuestionsHookCallbacks
             return false;
         }
 
-        $customQuestionDAO = app(CustomQuestionDAO::class);
-        $customQuestionsResult = $customQuestionDAO->getByContextId($request->getContext()->getId());
+        $customQuestions = Repo::customQuestion()->getCollector()
+            ->filterByContextIds([$submission->getContextId()])
+            ->getMany()
+            ->remember();
+
+        if ($customQuestions->count() < 1) {
+            return false;
+        }
+
         $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
 
-        $customQuestions = [];
-        $customQuestionResponses = [];
-        foreach ($customQuestionsResult as $customQuestion) {
+        $customQuestionsProps = [];
+        $customQuestionResponsesProps = [];
+        foreach ($customQuestions as $customQuestion) {
             $customQuestionResponse = $customQuestionResponseDAO->getByCustomQuestionId(
                 $customQuestion->getId(),
                 $submission->getId()
             );
             if ($customQuestionResponse) {
-                $customQuestionResponses[] = $customQuestionResponse->getAllData();
+                $customQuestionResponsesProps[] = $customQuestionResponse->getAllData();
             }
-            $customQuestions[] = $customQuestion;
-        }
-
-        if (empty($customQuestions)) {
-            return false;
+            $customQuestionsProps[] = $customQuestion->getAllData();
         }
 
         $apiUrl = $this->getCustomQuestionResponseApiUrl($request, $submission);
@@ -75,7 +78,7 @@ class CustomQuestionsHookCallbacks
         $customQuestionsForm = $this->getCustomQuestionsForm(
             $apiUrl,
             $formLocales,
-            $customQuestionsResult,
+            $customQuestions,
             $submission->getId()
         );
 
@@ -96,16 +99,10 @@ class CustomQuestionsHookCallbacks
             return $step;
         }, $steps);
 
-        $templateMgr->assign([
-            'customQuestions' => $customQuestions,
-        ]);
-
         $templateMgr->setState([
             'steps' => $steps,
-            'customQuestionResponses' => $customQuestionResponses,
-            'customQuestions' => array_map(function ($customQuestion) {
-                return $customQuestion->getAllData();
-            }, $customQuestions)
+            'customQuestionResponses' => $customQuestionResponsesProps,
+            'customQuestions' => $customQuestionsProps
         ]);
 
         $templateMgr->addJavaScript(
@@ -161,9 +158,10 @@ class CustomQuestionsHookCallbacks
         $request = Application::get()->getRequest();
         $submission = $templateMgr->getTemplateVars('submission');
 
-        $customQuestionDAO = app(CustomQuestionDAO::class);
-        $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
-        $customQuestions = $customQuestionDAO->getByContextId($request->getContext()->getId())->remember();
+        $customQuestions = Repo::customQuestion()->getCollector()
+            ->filterByContextIds([$submission->getContextId()])
+            ->getMany()
+            ->remember();
 
         $apiUrl = $this->getCustomQuestionResponseApiUrl($request, $submission);
         $formLocales = $this->getFormLocales($request->getContext());
@@ -178,23 +176,8 @@ class CustomQuestionsHookCallbacks
         $components = $templateMgr->getState('components');
         $components[$customQuestionsForm->id] = $customQuestionsForm->getConfig();
 
-        $customQuestionsProps = [];
-        $customQuestionResponsesProps = [];
-        foreach ($customQuestions as $customQuestion) {
-            $customQuestionResponse = $customQuestionResponseDAO->getByCustomQuestionId(
-                $customQuestion->getId(),
-                $submission->getId()
-            );
-            if ($customQuestionResponse) {
-                $customQuestionResponsesProps[] = $customQuestionResponse->getAllData();
-            }
-            $customQuestionsProps[] = $customQuestion->getAllData();
-        }
-
         $templateMgr->setState([
             'components' => $components,
-            'customQuestions' => $customQuestionsProps,
-            'customQuestionResponses' => $customQuestionResponsesProps,
         ]);
 
         return false;

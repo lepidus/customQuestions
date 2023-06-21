@@ -2,8 +2,8 @@
 
 namespace APP\plugins\generic\customQuestions\api\v1\customQuestionResponses;
 
-use APP\plugins\generic\customQuestions\classes\customQuestion\DAO as CustomQuestionDAO;
 use APP\plugins\generic\customQuestions\classes\customQuestionResponse\DAO as CustomQuestionResponseDAO;
+use APP\plugins\generic\customQuestions\classes\facades\Repo;
 use PKP\core\APIResponse;
 use PKP\handler\APIHandler;
 use PKP\security\authorization\ContextAccessPolicy;
@@ -54,8 +54,7 @@ class CustomQuestionResponseHandler extends APIHandler
         foreach ($slimRequest->getParsedBody() as $fieldName => $value) {
             $fieldNameSplitted = preg_split('/-/', $fieldName);
             $customQuestionId = end($fieldNameSplitted);
-            $customQuestionDAO = app(CustomQuestionDAO::class);
-            $customQuestion = $customQuestionDAO->get($customQuestionId);
+            $customQuestion = Repo::customQuestion()->get($customQuestionId);
 
             $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
             $customQuestionResponse = $customQuestionResponseDAO->getByCustomQuestionId(

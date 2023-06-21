@@ -2,7 +2,7 @@
 
 namespace APP\plugins\generic\customQuestions\controllers\listbuilder;
 
-use APP\plugins\generic\customQuestions\classes\customQuestion\DAO;
+use APP\plugins\generic\customQuestions\classes\facades\Repo;
 use APP\template\TemplateManager;
 use PKP\controllers\listbuilder\ListbuilderHandler;
 use PKP\controllers\listbuilder\MultilingualListbuilderGridColumn;
@@ -39,8 +39,7 @@ class CustomQuestionResponseItemListbuilderHandler extends SetupListbuilderHandl
 
     protected function loadData($request, $filter = null): array
     {
-        $customQuestionDAO = app(DAO::class);
-        $customQuestion = $customQuestionDAO->get($this->customQuestionId);
+        $customQuestion = Repo::customQuestion()->get($this->customQuestionId);
         $formattedResponses = [];
         if ($customQuestion) {
             $possibleResponses = $customQuestion->getPossibleResponses(null);
