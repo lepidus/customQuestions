@@ -25,12 +25,47 @@ class DAO extends EntityDAO
         return app(CustomQuestion::class);
     }
 
+    public function exists(int $id): bool
+    {
+        return DB::table($this->table)
+            ->where($this->primaryKeyColumn, '=', $id)
+            ->exists();
+    }
+
     public function get(int $id): ?CustomQuestion
     {
         $row = DB::table($this->table)
             ->where($this->primaryKeyColumn, $id)
             ->first();
         return $row ? $this->fromRow($row) : null;
+    }
+
+    public function getCount(Collector $query): int
+    {
+        return $query
+            ->getQueryBuilder()
+            ->get('cq.' . $this->primaryKeyColumn)
+            ->count();
+    }
+
+    public function getIds(Collector $query): Collection
+    {
+        return $query
+            ->getQueryBuilder()
+            ->pluck('cq.' . $this->primaryKeyColumn);
+    }
+
+    public function getMany(Collector $query): LazyCollection
+    {
+        $rows = $query
+            ->getQueryBuilder()
+            ->get();
+
+        return LazyCollection::make(function () use ($rows) {
+            foreach ($rows as $row) {
+                yield $row->custom_question_id => $this->fromRow($row);
+            }
+        });
     }
 
     public function getByContextId(int $contextId): LazyCollection
