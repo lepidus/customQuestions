@@ -132,6 +132,24 @@ class CustomQuestion extends \PKP\core\DataObject
             self::CUSTOM_QUESTION_TYPE_DROP_DOWN_BOX,
         ];
     }
+
+    public function getCustomQuestionResponseType(): string
+    {
+        switch ($this->getQuestionType()) {
+            case self::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD:
+            case self::CUSTOM_QUESTION_TYPE_TEXT_FIELD:
+            case self::CUSTOM_QUESTION_TYPE_TEXTAREA:
+                return 'string';
+                break;
+            case self::CUSTOM_QUESTION_TYPE_RADIO_BUTTONS:
+            case self::CUSTOM_QUESTION_TYPE_DROP_DOWN_BOX:
+                return 'int';
+                break;
+            case self::CUSTOM_QUESTION_TYPE_CHECKBOXES:
+                return 'array';
+                break;
+        }
+    }
 }
 
 if (!PKP_STRICT_MODE) {
