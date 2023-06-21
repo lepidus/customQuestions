@@ -68,20 +68,6 @@ class DAO extends EntityDAO
         });
     }
 
-    public function getByContextId(int $contextId): LazyCollection
-    {
-        $rows = DB::table($this->table)
-            ->where('context_id', $contextId)
-            ->orderBy('seq')
-            ->get();
-
-        return LazyCollection::make(function () use ($rows) {
-            foreach ($rows as $row) {
-                yield $row->custom_question_id = $this->fromRow($row);
-            }
-        });
-    }
-
     public function insert(CustomQuestion $customQuestion): int
     {
         return parent::_insert($customQuestion);

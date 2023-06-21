@@ -66,21 +66,6 @@ class DAOTest extends CustomQuestionsTestCase
         self::assertFalse($customQuestionDAO->exists($insertedCustomQuestionId));
     }
 
-    public function testGetByContextId(): void
-    {
-        $customQuestionDAO = app(DAO::class);
-        $customQuestion = $customQuestionDAO->newDataObject();
-        $customQuestion->setContextId($this->contextId);
-        $customQuestion->setTitle('Question in context', 'en');
-        $customQuestion->setSequence(1.0);
-        $customQuestion->setRequired(false);
-        $customQuestion->setQuestionType(CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD);
-        $customQuestionDAO->insert($customQuestion);
-
-        $customQuestions = $customQuestionDAO->getByContextId($this->contextId);
-        self::assertEquals([$customQuestion], $customQuestions->toArray());
-    }
-
     public function testResequenceQuestions(): void
     {
         $customQuestionDAO = app(DAO::class);
