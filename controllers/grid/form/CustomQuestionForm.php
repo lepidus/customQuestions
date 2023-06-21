@@ -90,8 +90,8 @@ class CustomQuestionForm extends Form
         }
 
         $customQuestion->setContextId($this->contextId);
-        $customQuestion->setLocalizedTitle($this->getData('title'));
-        $customQuestion->setLocalizedDescription($this->getData('description'));
+        $customQuestion->setTitle($this->getData('title'), null);
+        $customQuestion->setDescription($this->getData('description'), null);
         $customQuestion->setRequired($this->getData('required') ? 1 : 0);
         $customQuestion->setQuestionType($this->getData('questionType'));
 
@@ -104,9 +104,9 @@ class CustomQuestionForm extends Form
                 [$this, 'insertEntry'],
                 [$this, 'updateEntry']
             );
-            $customQuestion->setLocalizedPossibleResponses($this->getData('possibleResponsesProcessed'));
+            $customQuestion->setPossibleResponses($this->getData('possibleResponsesProcessed'));
         } else {
-            $customQuestion->setLocalizedPossibleResponses(null);
+            $customQuestion->setPossibleResponses(null, null);
         }
         if ($customQuestion->getId()) {
             $customQuestionDAO->update($customQuestion);

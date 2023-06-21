@@ -39,7 +39,7 @@ class CustomQuestionTest extends PKPTestCase
         self::assertEquals($possibleResponses, $customQuestion->getPossibleResponses(null));
     }
 
-    public function testLocalizedGettersAndSetters(): void
+    public function testLocalizedGetters(): void
     {
         $title = [
             'en' => 'Test question title',
@@ -57,9 +57,9 @@ class CustomQuestionTest extends PKPTestCase
         ];
 
         $customQuestion = new CustomQuestion();
-        $customQuestion->setLocalizedTitle($title);
-        $customQuestion->setLocalizedDescription($description);
-        $customQuestion->setLocalizedPossibleResponses($possibleResponses);
+        $customQuestion->setData('title', $title);
+        $customQuestion->setData('description', $description);
+        $customQuestion->setData('possibleResponses', $possibleResponses);
         self::assertEquals($title['en'], $customQuestion->getLocalizedTitle());
         self::assertEquals($description['en'], $customQuestion->getLocalizedDescription());
         self::assertEquals($possibleResponses['en'], $customQuestion->getLocalizedPossibleResponses());

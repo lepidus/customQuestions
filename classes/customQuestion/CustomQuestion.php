@@ -11,102 +11,87 @@ class CustomQuestion extends \PKP\core\DataObject
     public const CUSTOM_QUESTION_TYPE_RADIO_BUTTONS = 5;
     public const CUSTOM_QUESTION_TYPE_DROP_DOWN_BOX = 6;
 
-    public function getLocalizedTitle(): ?string
+    public function getLocalizedTitle()
     {
         return $this->getLocalizedData('title');
     }
 
-    public function setLocalizedTitle(array $title): void
-    {
-        $this->setData('title', $title, null);
-    }
-
-    public function getLocalizedDescription(): ?string
+    public function getLocalizedDescription()
     {
         return $this->getLocalizedData('description');
     }
 
-    public function setLocalizedDescription(array $description): void
-    {
-        $this->setData('description', $description, null);
-    }
-
-    public function getLocalizedPossibleResponses(): ?array
+    public function getLocalizedPossibleResponses()
     {
         return $this->getLocalizedData('possibleResponses');
     }
 
-    public function setLocalizedPossibleResponses(?array $possibleResponses): void
-    {
-        $this->setData('possibleResponses', $possibleResponses, null);
-    }
-
-    public function getContextId(): int
+    public function getContextId()
     {
         return $this->getData('contextId');
     }
 
-    public function setContextId(int $contextId): void
+    public function setContextId($contextId)
     {
         $this->setData('contextId', $contextId);
     }
 
-    public function getSequence(): ?float
+    public function getSequence()
     {
         return $this->getData('sequence');
     }
 
-    public function setSequence(float $sequence): void
+    public function setSequence($sequence)
     {
         $this->setData('sequence', $sequence);
     }
 
-    public function getQuestionType(): ?string
+    public function getQuestionType()
     {
         return $this->getData('questionType');
     }
 
-    public function setQuestionType(string $questionType): void
+    public function setQuestionType($questionType)
     {
         $this->setData('questionType', $questionType);
     }
 
-    public function getRequired(): ?bool
+    public function getRequired()
     {
         return $this->getData('required');
     }
 
-    public function setRequired(bool $required): void
+    public function setRequired($required)
     {
         $this->setData('required', $required);
     }
 
-    public function getTitle(?string $locale): ?string
+    public function getTitle($locale)
     {
         return $this->getData('title', $locale);
     }
 
-    public function setTitle(string $title, ?string $locale): void
+    public function setTitle($title, $locale)
     {
         $this->setData('title', $title, $locale);
     }
 
-    public function getDescription(?string $locale): ?string
+    public function getDescription($locale)
     {
         return $this->getData('description', $locale);
     }
 
-    public function setDescription(string $description, ?string $locale): void
+    public function setDescription($description, $locale)
     {
         $this->setData('description', $description, $locale);
     }
 
-    public function getPossibleResponses(?string $locale): ?array
+    public function getPossibleResponses($locale)
     {
         return $this->getData('possibleResponses', $locale);
     }
 
-    public function setPossibleResponses(array $possibleResponses, ?string $locale): void
+    public function setPossibleResponses($possibleResponses, $locale)
     {
         $this->setData('possibleResponses', $possibleResponses, $locale);
     }
