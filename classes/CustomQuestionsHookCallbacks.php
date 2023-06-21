@@ -11,6 +11,7 @@ use APP\plugins\generic\customQuestions\classes\customQuestionResponse\DAO as Cu
 use APP\plugins\generic\customQuestions\CustomQuestionsPlugin;
 use APP\submission\Submission;
 use APP\template\TemplateManager;
+use Illuminate\Support\LazyCollection;
 use PKP\components\forms\FormComponent;
 use PKP\context\Context;
 
@@ -74,7 +75,7 @@ class CustomQuestionsHookCallbacks
         $customQuestionsForm = $this->getCustomQuestionsForm(
             $apiUrl,
             $formLocales,
-            $customQuestions,
+            $customQuestionsResult,
             $submission->getId()
         );
 
@@ -119,37 +120,6 @@ class CustomQuestionsHookCallbacks
         return false;
     }
 
-    private function getCustomQuestionResponseApiUrl(Request $request, Submission $submission): string
-    {
-        return $request
-            ->getDispatcher()
-            ->url(
-                $request,
-                Application::ROUTE_API,
-                $request->getContext()->getPath(),
-                'customQuestionResponses' . '/' . $submission->getId(),
-            );
-    }
-
-    private function getFormLocales(Context $context): array
-    {
-        $supportedSubmissionLocales = $context->getSupportedSubmissionLocaleNames();
-        return array_map(
-            fn (string $locale, string $name) => ['key' => $locale, 'label' => $name],
-            array_keys($supportedSubmissionLocales),
-            $supportedSubmissionLocales
-        );
-    }
-
-    private function getCustomQuestionsForm(
-        string $action,
-        array $locales,
-        array $customQuestions,
-        int $submissionId
-    ): CustomQuestions {
-        return new CustomQuestions($action, $locales, $customQuestions, $submissionId);
-    }
-
     private function removeButtonFromForm(FormComponent $form): void
     {
         $form->addPage([
@@ -179,6 +149,88 @@ class CustomQuestionsHookCallbacks
         return $config;
     }
 
+    public function addToPublicationForms(string $hookName, array $params): bool
+    {
+        $templateMgr = $params[0];
+        $template = $params[1];
+
+        if (!in_array($template, ['workflow/workflow.tpl', 'authorDashboard/authorDashboard.tpl'])) {
+            return false;
+        }
+
+        $request = Application::get()->getRequest();
+        $submission = $templateMgr->getTemplateVars('submission');
+
+        $customQuestionDAO = app(CustomQuestionDAO::class);
+        $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
+        $customQuestions = $customQuestionDAO->getByContextId($request->getContext()->getId())->remember();
+
+        $apiUrl = $this->getCustomQuestionResponseApiUrl($request, $submission);
+        $formLocales = $this->getFormLocales($request->getContext());
+
+        $customQuestionsForm = $this->getCustomQuestionsForm(
+            $apiUrl,
+            $formLocales,
+            $customQuestions,
+            $submission->getId()
+        );
+
+        $components = $templateMgr->getState('components');
+        $components[$customQuestionsForm->id] = $customQuestionsForm->getConfig();
+
+        $customQuestionsProps = [];
+        $customQuestionResponsesProps = [];
+        foreach ($customQuestions as $customQuestion) {
+            $customQuestionResponse = $customQuestionResponseDAO->getByCustomQuestionId(
+                $customQuestion->getId(),
+                $submission->getId()
+            );
+            if ($customQuestionResponse) {
+                $customQuestionResponsesProps[] = $customQuestionResponse->getAllData();
+            }
+            $customQuestionsProps[] = $customQuestion->getAllData();
+        }
+
+        $templateMgr->setState([
+            'components' => $components,
+            'customQuestions' => $customQuestionsProps,
+            'customQuestionResponses' => $customQuestionResponsesProps,
+        ]);
+
+        return false;
+    }
+
+    private function getCustomQuestionResponseApiUrl(Request $request, Submission $submission): string
+    {
+        return $request
+            ->getDispatcher()
+            ->url(
+                $request,
+                Application::ROUTE_API,
+                $request->getContext()->getPath(),
+                'customQuestionResponses' . '/' . $submission->getId(),
+            );
+    }
+
+    private function getFormLocales(Context $context): array
+    {
+        $supportedSubmissionLocales = $context->getSupportedSubmissionLocaleNames();
+        return array_map(
+            fn (string $locale, string $name) => ['key' => $locale, 'label' => $name],
+            array_keys($supportedSubmissionLocales),
+            $supportedSubmissionLocales
+        );
+    }
+
+    private function getCustomQuestionsForm(
+        string $action,
+        array $locales,
+        LazyCollection $customQuestions,
+        int $submissionId
+    ): CustomQuestions {
+        return new CustomQuestions($action, $locales, $customQuestions, $submissionId);
+    }
+
     public function addToReviewStep(string $hookName, array $params): bool
     {
         $step = $params[0]['step'];
@@ -188,6 +240,20 @@ class CustomQuestionsHookCallbacks
         if ($step === 'details') {
             $output .= $templateMgr->fetch($this->plugin->getTemplateResource('review-customQuestions.tpl'));
         }
+
+        return false;
+    }
+
+    public function addCustomQuestionsTab(string $hookName, array $params): bool
+    {
+        $smarty = &$params[1];
+        $output = &$params[2];
+
+        $output .= sprintf(
+            '<tab id="customQuestions" label="%s">%s</tab>',
+            __('plugins.generic.customQuestions.displayName'),
+            '<pkp-form v-bind="components.customQuestions" @set="set"></pkp-form>'
+        );
 
         return false;
     }
