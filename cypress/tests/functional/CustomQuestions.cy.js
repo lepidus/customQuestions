@@ -2,7 +2,7 @@ describe('Custom Quetions plugin tests', function () {
 
 	let customQuestions;
 
-	before(function() {
+	before(function () {
 		customQuestions = [
 			{
 				title: 'Small text custom question',
@@ -84,14 +84,6 @@ describe('Custom Quetions plugin tests', function () {
 	};
 
 	it('Creates and exercises a custom question', function () {
-		const customQuestion = {
-			title: 'Here is my custom question.',
-			description: 'Question description.',
-			required: true,
-			type: '4',
-			possibleResponses: ['option 1', 'option 2', 'option 3'],
-		};
-
 		cy.login('admin', 'admin', 'publicknowledge');
 
 		cy.get('.app__nav a').contains('Website').click();
@@ -102,7 +94,13 @@ describe('Custom Quetions plugin tests', function () {
 		cy.waitJQuery();
 		cy.get('tr[id*="customquestionsplugin"] a.show_extras').click();
 
-		createCustomQuestion(customQuestion);
+		createCustomQuestion({
+			title: 'Here is my custom question.',
+			description: 'Question description.',
+			required: true,
+			type: '4',
+			possibleResponses: ['option 1', 'option 2', 'option 3'],
+		});
 
 		cy.get('a[id*="customquestionsplugin-settings"]').click();
 		cy.get('tr[id*="customquestiongrid-row"]:contains("Here is my custom question.") a.show_extras').click();
@@ -150,6 +148,7 @@ describe('Custom Quetions plugin tests', function () {
 		cy.contains('Begin Submission').click();
 
 		cy.contains('Make a Submission: Details');
+
 		cy.setTinyMceContent('titleAbstract-abstract-control-en', 'Checking custom questions in submission wizard.');
 
 		customQuestions.forEach((customQuestion) => {
@@ -246,5 +245,36 @@ describe('Custom Quetions plugin tests', function () {
 
 		cy.get('button:contains("Submit")').click();
 		cy.get('.modal__panel button').contains('Submit').click();
+	});
+
+	it('Checks custom questions in publication workflow', function () {
+		cy.findSubmissionAsEditor('dbarnes', null, 'Corino');
+		cy.get('#publication-button').click();
+		cy.get('#customQuestions-button').click();
+
+		customQuestions.forEach((customQuestion) => {
+			let kebabTitle = toKebabCase(customQuestion.title);
+
+			if ([1, 2].includes(customQuestion.type)) {
+				cy.get(`input[name^="${kebabTitle}"][id*="-control-en"]`).should('have.value', customQuestion.response)
+			}
+			if (customQuestion.type === '3') {
+				cy.get(`textarea[id^="customQuestions-${kebabTitle}"][id*="-control-en"]`).then(($textarea) => {
+					const fieldId = $textarea.attr('id');
+					cy.getTinyMceContent(fieldId).should('eq', `<p>${customQuestion.response}</p>`);
+				});
+			}
+			if (customQuestion.type === '4') {
+				customQuestion.response.forEach((response) => {
+					cy.get(`input[name^="${kebabTitle}"][value=${response}]`).should('be.checked');
+				});
+			}
+			if (customQuestion.type === '5') {
+				cy.get(`input[name^="${kebabTitle}"][value=${customQuestion.response}]`).should('be.checked');
+			}
+			if (customQuestion.type === '6') {
+				cy.get(`select[id^="customQuestions-${kebabTitle}"] option:selected`).should('have.attr', 'label', customQuestion.response);
+			}
+		});
 	});
 });
