@@ -10,37 +10,6 @@ use APP\plugins\generic\customQuestions\tests\CustomQuestionsTestCase;
 
 class DAOTest extends CustomQuestionsTestCase
 {
-    private $submissionId;
-    private $publicationId;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->createSubmission();
-    }
-
-    protected function tearDown(): void
-    {
-        $submission = Repo::submission()->get($this->submissionId);
-        Repo::submission()->delete($submission);
-
-        parent::tearDown();
-    }
-
-    private function createSubmission(): void
-    {
-        $submission = Repo::submission()->newDataObject();
-        $submission->setData('contextId', $this->contextId);
-        $this->submissionId = Repo::submission()->dao->insert($submission);
-
-        $publication = Repo::publication()->newDataObject();
-        $publication->setData('submissionId', $submission->getId());
-        $this->publicationId = Repo::publication()->dao->insert($publication);
-
-        $submission->setData('currentPublicationId', $publication->getId());
-        Repo::submission()->dao->update($submission);
-    }
-
     public function testCreateNewDataObject(): void
     {
         $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
@@ -90,7 +59,6 @@ class DAOTest extends CustomQuestionsTestCase
         ], $fetchedCustomQuestionResponse->_data);
 
         $customQuestionResponseDAO->delete($customQuestionResponse);
-        $fetchedCustomQuestionResponse = $customQuestionResponseDAO->get($customQuestionResponse->getId());
-        self::assertNull($fetchedCustomQuestionResponse);
+        self::assertFalse($customQuestionResponseDAO->exists($customQuestionResponse->getId(), $customQuestionId));
     }
 }
