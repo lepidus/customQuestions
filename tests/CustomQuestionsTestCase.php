@@ -2,6 +2,7 @@
 
 namespace APP\plugins\generic\customQuestions\tests;
 
+use APP\plugins\generic\customQuestions\classes\facades\Repo;
 use PKP\db\DAORegistry;
 use PKP\plugins\Hook;
 use PKP\tests\DatabaseTestCase;
@@ -9,6 +10,7 @@ use PKP\tests\DatabaseTestCase;
 class CustomQuestionsTestCase extends DatabaseTestCase
 {
     protected $contextId;
+    protected $submissionId;
 
     protected function getAffectedTables(): array
     {
@@ -23,7 +25,8 @@ class CustomQuestionsTestCase extends DatabaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->contextId = $this->createContext();
+        $this->createContext();
+        $this->createSubmission();
         $this->addSchemaFile('customQuestion');
         $this->addSchemaFile('customQuestionResponse');
     }
@@ -37,7 +40,7 @@ class CustomQuestionsTestCase extends DatabaseTestCase
         parent::tearDown();
     }
 
-    protected function createContext(): int
+    protected function createContext(): void
     {
         $contextDAO = DAORegistry::getDAO('ServerDAO');
         $context = $contextDAO->newDataObject();
@@ -45,7 +48,21 @@ class CustomQuestionsTestCase extends DatabaseTestCase
         $context->setData('enabled', true);
         $context->setData('primaryLocale', 'en');
         $context->setPath('testContext');
-        return $contextDAO->insertObject($context);
+        $this->contextId = $contextDAO->insertObject($context);
+    }
+
+    protected function createSubmission(): void
+    {
+        $submission = Repo::submission()->newDataObject();
+        $submission->setData('contextId', $this->contextId);
+        $this->submissionId = Repo::submission()->dao->insert($submission);
+
+        $publication = Repo::publication()->newDataObject();
+        $publication->setData('submissionId', $submission->getId());
+        Repo::publication()->dao->insert($publication);
+
+        $submission->setData('currentPublicationId', $publication->getId());
+        Repo::submission()->dao->update($submission);
     }
 
     protected function addSchemaFile(string $schemaName): void
