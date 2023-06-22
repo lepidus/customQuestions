@@ -2,7 +2,7 @@
 
 namespace APP\plugins\generic\customQuestions\classes\customQuestionResponse;
 
-use Illuminate\Support\Facades\DB;
+use APP\plugins\generic\customQuestions\classes\facades\Repo;
 use Illuminate\Support\LazyCollection;
 use PKP\core\EntityDAO;
 use PKP\core\traits\EntityWithParent;
@@ -65,12 +65,12 @@ class DAO extends EntityDAO
 
     public function getByCustomQuestionId(int $customQuestionId, int $submissionId): ?CustomQuestionResponse
     {
-        $row = DB::table('custom_question_responses as cqr')
-            ->where('cqr.custom_question_id', $customQuestionId)
-            ->where('cqr.submission_id', $submissionId)
-            ->first();
+        $results = Repo::customQuestionResponse()->getCollector()
+            ->filterByCustomQuestionIds([$customQuestionId])
+            ->filterBySubmissionIds([$submissionId])
+            ->getMany();
 
-        return $row ? $this->fromRow($row) : null;
+        return $results->isNotEmpty() ? $results->first() : null;
     }
 
     public function fromRow(object $row): CustomQuestionResponse
