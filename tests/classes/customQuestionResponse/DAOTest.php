@@ -2,69 +2,43 @@
 
 namespace APP\plugins\generic\customQuestions\tests\classes\customQuestionResponse;
 
-use APP\facades\Repo;
 use APP\plugins\generic\customQuestions\classes\customQuestion\CustomQuestion;
-use APP\plugins\generic\customQuestions\classes\customQuestion\DAO as CustomQuestionDAO;
 use APP\plugins\generic\customQuestions\classes\customQuestionResponse\CustomQuestionResponse;
 use APP\plugins\generic\customQuestions\classes\customQuestionResponse\DAO as CustomQuestionResponseDAO;
-use PKP\plugins\Hook;
-use PKP\tests\DatabaseTestCase;
+use APP\plugins\generic\customQuestions\classes\facades\Repo;
+use APP\plugins\generic\customQuestions\tests\CustomQuestionsTestCase;
 
-class DAOTest extends DatabaseTestCase
+class DAOTest extends CustomQuestionsTestCase
 {
+    private $submissionId;
+    private $publicationId;
+
     protected function setUp(): void
     {
         parent::setUp();
-
-        Hook::add('Schema::get::customQuestionResponse', function ($hookName, $args) {
-            $schema = & $args[0];
-            $schemaFile = sprintf(
-                '%s/plugins/generic/customQuestions/schemas/%s.json',
-                BASE_SYS_DIR,
-                'customQuestionResponse'
-            );
-            if (file_exists($schemaFile)) {
-                $schema = json_decode(file_get_contents($schemaFile));
-                if (!$schema) {
-                    throw new \Exception(
-                        'Schema failed to decode. This usually means it is invalid JSON. Requested: '
-                        . $schemaFile
-                        . '. Last JSON error: '
-                        . json_last_error()
-                    );
-                }
-            }
-            return true;
-        });
+        $this->createSubmission();
     }
 
-    protected function getAffectedTables(): array
+    protected function tearDown(): void
     {
-        return [
-            'publications',
-            'publication_settings',
-            'submissions',
-            'submission_settings',
-            'custom_questions',
-            'custom_question_responses',
-            'custom_question_settings',
-        ];
+        $submission = Repo::submission()->get($this->submissionId);
+        Repo::submission()->delete($submission);
+
+        parent::tearDown();
     }
 
-    private function createTestSubmission(): int
+    private function createSubmission(): void
     {
         $submission = Repo::submission()->newDataObject();
-        $submission->setData('contextId', 1);
-        Repo::submission()->dao->insert($submission);
+        $submission->setData('contextId', $this->contextId);
+        $this->submissionId = Repo::submission()->dao->insert($submission);
 
         $publication = Repo::publication()->newDataObject();
         $publication->setData('submissionId', $submission->getId());
-        Repo::publication()->dao->insert($publication);
+        $this->publicationId = Repo::publication()->dao->insert($publication);
 
         $submission->setData('currentPublicationId', $publication->getId());
         Repo::submission()->dao->update($submission);
-
-        return $submission->getId();
     }
 
     public function testCreateNewDataObject(): void
@@ -76,19 +50,16 @@ class DAOTest extends DatabaseTestCase
 
     public function testCrud(): void
     {
-        $customQuestionDAO = app(CustomQuestionDAO::class);
-        $customQuestion = $customQuestionDAO->newDataObject();
-        $customQuestion->setContextId(1);
+        $customQuestion = Repo::customQuestion()->newDataObject();
+        $customQuestion->setContextId($this->contextId);
         $customQuestion->setTitle('Test Custom Question', 'en');
         $customQuestion->setQuestionType(CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD);
-        $customQuestionDAO->insert($customQuestion);
-
-        $submissionId = $this->createTestSubmission();
+        $customQuestionId = Repo::customQuestion()->add($customQuestion);
 
         $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
         $customQuestionResponse = $customQuestionResponseDAO->newDataObject();
-        $customQuestionResponse->setSubmissionId($submissionId);
-        $customQuestionResponse->setCustomQuestionId($customQuestion->getId());
+        $customQuestionResponse->setSubmissionId($this->submissionId);
+        $customQuestionResponse->setCustomQuestionId($customQuestionId);
         $customQuestionResponse->setValue(['en' => 'question response']);
         $customQuestionResponse->setResponseType('string');
         $customQuestionResponseDAO->insert($customQuestionResponse);
@@ -96,8 +67,8 @@ class DAOTest extends DatabaseTestCase
         $fetchedCustomQuestionResponse = $customQuestionResponseDAO->get($customQuestionResponse->getId());
         self::assertEquals([
             'id' => $customQuestionResponse->getId(),
-            'submissionId' => $submissionId,
-            'customQuestionId' => $customQuestion->getId(),
+            'submissionId' => $this->submissionId,
+            'customQuestionId' => $customQuestionId,
             'value' => ['en' => 'question response'],
             'responseType' => 'string'
         ], $fetchedCustomQuestionResponse->_data);
@@ -107,12 +78,12 @@ class DAOTest extends DatabaseTestCase
         $customQuestionResponseDAO->update($customQuestionResponse);
 
         $fetchedCustomQuestionResponse = $customQuestionResponseDAO->getByCustomQuestionId(
-            $customQuestion->getId(),
-            $submissionId
+            $customQuestionId,
+            $this->submissionId
         );
         self::assertEquals([
             'id' => $customQuestionResponse->getId(),
-            'submissionId' => $submissionId,
+            'submissionId' => $this->submissionId,
             'customQuestionId' => $customQuestion->getId(),
             'value' => ['option1', 'option2'],
             'responseType' => 'array'
