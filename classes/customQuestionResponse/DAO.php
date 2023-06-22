@@ -3,13 +3,20 @@
 namespace APP\plugins\generic\customQuestions\classes\customQuestionResponse;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\LazyCollection;
 use PKP\core\EntityDAO;
+use PKP\core\traits\EntityWithParent;
 
 class DAO extends EntityDAO
 {
+    use EntityWithParent;
+
     public $schema = 'customQuestionResponse';
+
     public $table = 'custom_question_responses';
+
     public $primaryKeyColumn = 'custom_question_response_id';
+
     public $primaryTableColumns = [
         'id' => 'custom_question_response_id',
         'submissionId' => 'submission_id',
@@ -18,17 +25,42 @@ class DAO extends EntityDAO
         'value' => 'response_value'
     ];
 
+    public function getParentColumn(): string
+    {
+        return 'custom_question_id';
+    }
+
     public function newDataObject(): CustomQuestionResponse
     {
         return app(CustomQuestionResponse::class);
     }
 
-    public function get(int $id): ?CustomQuestionResponse
+    public function getCount(Collector $query): int
     {
-        $row = DB::table($this->table)
-            ->where($this->primaryKeyColumn, $id)
-            ->first();
-        return $row ? $this->fromRow($row) : null;
+        return $query
+            ->getQueryBuilder()
+            ->count();
+    }
+
+    public function getIds(Collector $query): Collection
+    {
+        return $query
+            ->getQueryBuilder()
+            ->select('cqr.' . $this->primaryKeyColumn)
+            ->pluck('cqr.' . $this->primaryKeyColumn);
+    }
+
+    public function getMany(Collector $query): LazyCollection
+    {
+        $rows = $query
+            ->getQueryBuilder()
+            ->get();
+
+        return LazyCollection::make(function () use ($rows) {
+            foreach ($rows as $row) {
+                yield $row->custom_question_response_id => $this->fromRow($row);
+            }
+        });
     }
 
     public function getByCustomQuestionId(int $customQuestionId, int $submissionId): ?CustomQuestionResponse
