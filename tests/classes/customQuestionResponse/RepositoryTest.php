@@ -54,7 +54,7 @@ class RepositoryTest extends CustomQuestionsTestCase
         $params['responseType'] = 'array';
         $repository->edit($customQuestionResponse, $params);
 
-        $fetchedCustomQuestionResponse = $repository->get($customQuestionResponse->getId());
+        $fetchedCustomQuestionResponse = $repository->getByCustomQuestionId($customQuestionId, $this->submissionId);
         self::assertEquals($params, $fetchedCustomQuestionResponse->_data);
 
         $customQuestionResponses = $repository->getCollector()

@@ -39,6 +39,11 @@ class Repository
         return $this->dao->get($id);
     }
 
+    public function getByCustomQuestionId(int $customQuestionId, int $submissionId): ?CustomQuestionResponse
+    {
+        return $this->dao->getByCustomQuestionId($customQuestionId, $submissionId);
+    }
+
     public function add(CustomQuestionResponse $customQuestionResponse): int
     {
         $id = $this->dao->insert($customQuestionResponse);
