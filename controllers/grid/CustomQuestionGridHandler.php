@@ -4,7 +4,7 @@ namespace APP\plugins\generic\customQuestions\controllers\grid;
 
 use APP\core\Request;
 use APP\notification\NotificationManager;
-use APP\plugins\generic\customQuestions\classes\customQuestion\DAO;
+use APP\plugins\generic\customQuestions\classes\facades\Repo;
 use APP\plugins\generic\customQuestions\controllers\grid\form\CustomQuestionForm;
 use PKP\controllers\grid\feature\OrderGridItemsFeature;
 use PKP\controllers\grid\GridColumn;
@@ -94,13 +94,12 @@ class CustomQuestionGridHandler extends GridHandler
 
     protected function loadData($request, $filter = null): array
     {
-        $customQuestionDAO = app(DAO::class);
-        $customQuestions = [];
+        $customQuestions = Repo::customQuestion()->getCollector()
+            ->filterByContextIds([$request->getContext()->getId()])
+            ->getMany()
+            ->remember();
 
-        foreach ($customQuestionDAO->getByContextId($request->getContext()->getId()) as $customQuestion) {
-            $customQuestions[$customQuestion->getId()] = $customQuestion;
-        }
-        return $customQuestions;
+        return $customQuestions->toArray();
     }
 
     public function getDataElementSequence($gridDataElement): int
@@ -167,8 +166,7 @@ class CustomQuestionGridHandler extends GridHandler
         $customQuestionId = (int) $request->getUserVar('rowId');
 
         if ($request->checkCSRF()) {
-            $customQuestionDAO = app(DAO::class);
-            $customQuestionDAO->deleteById($customQuestionId);
+            Repo::customQuestion()->dao->deleteById($customQuestionId);
             return \PKP\db\DAO::getDataChangedEvent($customQuestionId);
         }
 

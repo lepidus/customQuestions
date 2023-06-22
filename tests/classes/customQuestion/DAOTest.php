@@ -4,69 +4,10 @@ namespace APP\plugins\generic\customQuestions\tests\classes\customQuestion;
 
 use APP\plugins\generic\customQuestions\classes\customQuestion\CustomQuestion;
 use APP\plugins\generic\customQuestions\classes\customQuestion\DAO;
-use PKP\db\DAORegistry;
-use PKP\plugins\Hook;
-use PKP\tests\DatabaseTestCase;
+use APP\plugins\generic\customQuestions\tests\CustomQuestionsTestCase;
 
-class DAOTest extends DatabaseTestCase
+class DAOTest extends CustomQuestionsTestCase
 {
-    public $contextId;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->contextId = $this->createTestContext();
-
-        Hook::add('Schema::get::customQuestion', function ($hookName, $args) {
-            $schema = & $args[0];
-
-            $schemaFile = sprintf(
-                '%s/plugins/generic/customQuestions/schemas/%s.json',
-                BASE_SYS_DIR,
-                'customQuestion'
-            );
-            if (file_exists($schemaFile)) {
-                $schema = json_decode(file_get_contents($schemaFile));
-                if (!$schema) {
-                    throw new \Exception(
-                        'Schema failed to decode. This usually means it is invalid JSON. Requested: '
-                        . $schemaFile
-                        . '. Last JSON error: '
-                        . json_last_error()
-                    );
-                }
-            }
-            return true;
-        });
-    }
-
-    protected function tearDown(): void
-    {
-        $contextDAO = DAORegistry::getDAO('ServerDAO');
-        $context = $contextDAO->getById($this->contextId);
-        $contextDAO->deleteObject($context);
-
-        parent::tearDown();
-    }
-
-    protected function getAffectedTables(): array
-    {
-        return ['custom_questions', 'custom_question_settings'];
-    }
-
-    private function createTestContext(): int
-    {
-        $contextDAO = DAORegistry::getDAO('ServerDAO');
-        $context = $contextDAO->newDataObject();
-        $context->setData('seq', 2.0);
-        $context->setData('enabled', true);
-        $context->setData('primaryLocale', 'en');
-        $context->setPath('testContext');
-
-        return $contextDAO->insertObject($context);
-    }
-
     public function testCreateNewDataObject(): void
     {
         $customQuestionDAO = app(DAO::class);
@@ -122,23 +63,7 @@ class DAOTest extends DatabaseTestCase
         ], $fetchedCustomQuestion->_data);
 
         $customQuestionDAO->delete($customQuestion);
-        $fetchedCustomQuestion = $customQuestionDAO->get($insertedCustomQuestionId);
-        self::assertNull($fetchedCustomQuestion);
-    }
-
-    public function testGetByContextId(): void
-    {
-        $customQuestionDAO = app(DAO::class);
-        $customQuestion = $customQuestionDAO->newDataObject();
-        $customQuestion->setContextId($this->contextId);
-        $customQuestion->setTitle('Question in context', 'en');
-        $customQuestion->setSequence(1.0);
-        $customQuestion->setRequired(false);
-        $customQuestion->setQuestionType(CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD);
-        $customQuestionDAO->insert($customQuestion);
-
-        $customQuestions = $customQuestionDAO->getByContextId($this->contextId);
-        self::assertEquals([$customQuestion], $customQuestions->toArray());
+        self::assertFalse($customQuestionDAO->exists($insertedCustomQuestionId));
     }
 
     public function testResequenceQuestions(): void

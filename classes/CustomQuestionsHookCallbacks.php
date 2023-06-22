@@ -6,11 +6,11 @@ use APP\core\Application;
 use APP\core\Request;
 use APP\pages\submission\SubmissionHandler;
 use APP\plugins\generic\customQuestions\classes\components\forms\CustomQuestions;
-use APP\plugins\generic\customQuestions\classes\customQuestion\DAO as CustomQuestionDAO;
-use APP\plugins\generic\customQuestions\classes\customQuestionResponse\DAO as CustomQuestionResponseDAO;
+use APP\plugins\generic\customQuestions\classes\facades\Repo;
 use APP\plugins\generic\customQuestions\CustomQuestionsPlugin;
 use APP\submission\Submission;
 use APP\template\TemplateManager;
+use Illuminate\Support\LazyCollection;
 use PKP\components\forms\FormComponent;
 use PKP\context\Context;
 
@@ -47,24 +47,12 @@ class CustomQuestionsHookCallbacks
             return false;
         }
 
-        $customQuestionDAO = app(CustomQuestionDAO::class);
-        $customQuestionsResult = $customQuestionDAO->getByContextId($request->getContext()->getId());
-        $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
+        $customQuestions = Repo::customQuestion()->getCollector()
+            ->filterByContextIds([$submission->getContextId()])
+            ->getMany()
+            ->remember();
 
-        $customQuestions = [];
-        $customQuestionResponses = [];
-        foreach ($customQuestionsResult as $customQuestion) {
-            $customQuestionResponse = $customQuestionResponseDAO->getByCustomQuestionId(
-                $customQuestion->getId(),
-                $submission->getId()
-            );
-            if ($customQuestionResponse) {
-                $customQuestionResponses[] = $customQuestionResponse->getAllData();
-            }
-            $customQuestions[] = $customQuestion;
-        }
-
-        if (empty($customQuestions)) {
+        if ($customQuestions->isEmpty()) {
             return false;
         }
 
@@ -95,16 +83,24 @@ class CustomQuestionsHookCallbacks
             return $step;
         }, $steps);
 
-        $templateMgr->assign([
-            'customQuestions' => $customQuestions,
-        ]);
+        $customQuestionsProps = [];
+        $customQuestionResponsesProps = [];
+
+        foreach ($customQuestions as $customQuestion) {
+            $customQuestionResponse = Repo::customQuestionResponse()
+                ->getByCustomQuestionId($customQuestion->getId(), $submission->getId());
+
+            if ($customQuestionResponse) {
+                $customQuestionResponsesProps[] = $customQuestionResponse->getAllData();
+            }
+
+            $customQuestionsProps[] = $customQuestion->getAllData();
+        }
 
         $templateMgr->setState([
             'steps' => $steps,
-            'customQuestionResponses' => $customQuestionResponses,
-            'customQuestions' => array_map(function ($customQuestion) {
-                return $customQuestion->getAllData();
-            }, $customQuestions)
+            'customQuestions' => $customQuestionsProps,
+            'customQuestionResponses' => $customQuestionResponsesProps,
         ]);
 
         $templateMgr->addJavaScript(
@@ -117,37 +113,6 @@ class CustomQuestionsHookCallbacks
         );
 
         return false;
-    }
-
-    private function getCustomQuestionResponseApiUrl(Request $request, Submission $submission): string
-    {
-        return $request
-            ->getDispatcher()
-            ->url(
-                $request,
-                Application::ROUTE_API,
-                $request->getContext()->getPath(),
-                'customQuestionResponses' . '/' . $submission->getId(),
-            );
-    }
-
-    private function getFormLocales(Context $context): array
-    {
-        $supportedSubmissionLocales = $context->getSupportedSubmissionLocaleNames();
-        return array_map(
-            fn (string $locale, string $name) => ['key' => $locale, 'label' => $name],
-            array_keys($supportedSubmissionLocales),
-            $supportedSubmissionLocales
-        );
-    }
-
-    private function getCustomQuestionsForm(
-        string $action,
-        array $locales,
-        array $customQuestions,
-        int $submissionId
-    ): CustomQuestions {
-        return new CustomQuestions($action, $locales, $customQuestions, $submissionId);
     }
 
     private function removeButtonFromForm(FormComponent $form): void
@@ -179,15 +144,107 @@ class CustomQuestionsHookCallbacks
         return $config;
     }
 
+    public function addToPublicationForms(string $hookName, array $params): bool
+    {
+        $templateMgr = $params[0];
+        $template = $params[1];
+
+        if (!in_array($template, ['workflow/workflow.tpl', 'authorDashboard/authorDashboard.tpl'])) {
+            return false;
+        }
+
+        $request = Application::get()->getRequest();
+        $submission = $templateMgr->getTemplateVars('submission');
+
+        $customQuestions = Repo::customQuestion()->getCollector()
+            ->filterByContextIds([$submission->getContextId()])
+            ->getMany()
+            ->remember();
+
+        $apiUrl = $this->getCustomQuestionResponseApiUrl($request, $submission);
+        $formLocales = $this->getFormLocales($request->getContext());
+
+        $customQuestionsForm = $this->getCustomQuestionsForm(
+            $apiUrl,
+            $formLocales,
+            $customQuestions,
+            $submission->getId()
+        );
+
+        $components = $templateMgr->getState('components');
+        $components[$customQuestionsForm->id] = $customQuestionsForm->getConfig();
+
+        $templateMgr->setState([
+            'components' => $components,
+        ]);
+
+        return false;
+    }
+
+    private function getCustomQuestionResponseApiUrl(Request $request, Submission $submission): string
+    {
+        return $request
+            ->getDispatcher()
+            ->url(
+                $request,
+                Application::ROUTE_API,
+                $request->getContext()->getPath(),
+                'customQuestionResponses' . '/' . $submission->getId(),
+            );
+    }
+
+    private function getFormLocales(Context $context): array
+    {
+        $supportedSubmissionLocales = $context->getSupportedSubmissionLocaleNames();
+        return array_map(
+            fn (string $locale, string $name) => ['key' => $locale, 'label' => $name],
+            array_keys($supportedSubmissionLocales),
+            $supportedSubmissionLocales
+        );
+    }
+
+    private function getCustomQuestionsForm(
+        string $action,
+        array $locales,
+        LazyCollection $customQuestions,
+        int $submissionId
+    ): CustomQuestions {
+        return new CustomQuestions($action, $locales, $customQuestions, $submissionId);
+    }
+
     public function addToReviewStep(string $hookName, array $params): bool
     {
         $step = $params[0]['step'];
         $templateMgr = $params[1];
         $output = &$params[2];
+        $context = Application::get()->getRequest()->getContext();
+
+        if (
+            Repo::customQuestion()->getCollector()
+                ->filterByContextIds([$context->getId()])
+                ->getMany()
+                ->isEmpty()
+        ) {
+            return false;
+        }
 
         if ($step === 'details') {
             $output .= $templateMgr->fetch($this->plugin->getTemplateResource('review-customQuestions.tpl'));
         }
+
+        return false;
+    }
+
+    public function addCustomQuestionsTab(string $hookName, array $params): bool
+    {
+        $smarty = &$params[1];
+        $output = &$params[2];
+
+        $output .= sprintf(
+            '<tab id="customQuestions" label="%s">%s</tab>',
+            __('plugins.generic.customQuestions.displayName'),
+            '<pkp-form v-bind="components.customQuestions" @set="set"></pkp-form>'
+        );
 
         return false;
     }

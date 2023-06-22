@@ -24,7 +24,9 @@ class CustomQuestionsPlugin extends GenericPlugin
         if ($success && $this->getEnabled()) {
             $hookCallbacks = new CustomQuestionsHookCallbacks($this);
             Hook::add('TemplateManager::display', [$hookCallbacks, 'addToDetailsStep']);
+            Hook::add('TemplateManager::display', [$hookCallbacks, 'addToPublicationForms']);
             Hook::add('Template::SubmissionWizard::Section::Review', [$hookCallbacks, 'addToReviewStep']);
+            Hook::add('Template::Workflow::Publication', [$hookCallbacks, 'addCustomQuestionsTab']);
 
             Hook::add('LoadComponentHandler', [$this, 'setupGridHandler']);
             Hook::add('Dispatcher::dispatch', [$this, 'setupAPIHandler']);
