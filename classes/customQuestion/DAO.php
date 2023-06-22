@@ -9,9 +9,13 @@ use PKP\core\EntityDAO;
 class DAO extends EntityDAO
 {
     public $schema = 'customQuestion';
+
     public $table = 'custom_questions';
+
     public $settingsTable = 'custom_question_settings';
+
     public $primaryKeyColumn = 'custom_question_id';
+
     public $primaryTableColumns = [
         'id' => 'custom_question_id',
         'contextId' => 'context_id',
@@ -52,6 +56,7 @@ class DAO extends EntityDAO
     {
         return $query
             ->getQueryBuilder()
+            ->select('cq.' . $this->primaryKeyColumn)
             ->pluck('cq.' . $this->primaryKeyColumn);
     }
 
