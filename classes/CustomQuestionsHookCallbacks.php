@@ -6,7 +6,6 @@ use APP\core\Application;
 use APP\core\Request;
 use APP\pages\submission\SubmissionHandler;
 use APP\plugins\generic\customQuestions\classes\components\forms\CustomQuestions;
-use APP\plugins\generic\customQuestions\classes\customQuestionResponse\DAO as CustomQuestionResponseDAO;
 use APP\plugins\generic\customQuestions\classes\facades\Repo;
 use APP\plugins\generic\customQuestions\CustomQuestionsPlugin;
 use APP\submission\Submission;
@@ -53,23 +52,8 @@ class CustomQuestionsHookCallbacks
             ->getMany()
             ->remember();
 
-        if ($customQuestions->count() < 1) {
+        if ($customQuestions->isEmpty()) {
             return false;
-        }
-
-        $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
-
-        $customQuestionsProps = [];
-        $customQuestionResponsesProps = [];
-        foreach ($customQuestions as $customQuestion) {
-            $customQuestionResponse = $customQuestionResponseDAO->getByCustomQuestionId(
-                $customQuestion->getId(),
-                $submission->getId()
-            );
-            if ($customQuestionResponse) {
-                $customQuestionResponsesProps[] = $customQuestionResponse->getAllData();
-            }
-            $customQuestionsProps[] = $customQuestion->getAllData();
         }
 
         $apiUrl = $this->getCustomQuestionResponseApiUrl($request, $submission);
@@ -99,10 +83,24 @@ class CustomQuestionsHookCallbacks
             return $step;
         }, $steps);
 
+        $customQuestionsProps = [];
+        $customQuestionResponsesProps = [];
+
+        foreach ($customQuestions as $customQuestion) {
+            $customQuestionResponse = Repo::customQuestionResponse()
+                ->getByCustomQuestionId($customQuestion->getId(), $submission->getId());
+
+            if ($customQuestionResponse) {
+                $customQuestionResponsesProps[] = $customQuestionResponse->getAllData();
+            }
+
+            $customQuestionsProps[] = $customQuestion->getAllData();
+        }
+
         $templateMgr->setState([
             'steps' => $steps,
+            'customQuestions' => $customQuestionsProps,
             'customQuestionResponses' => $customQuestionResponsesProps,
-            'customQuestions' => $customQuestionsProps
         ]);
 
         $templateMgr->addJavaScript(
@@ -219,6 +217,16 @@ class CustomQuestionsHookCallbacks
         $step = $params[0]['step'];
         $templateMgr = $params[1];
         $output = &$params[2];
+        $context = Application::get()->getRequest()->getContext();
+
+        if (
+            Repo::customQuestion()->getCollector()
+                ->filterByContextIds([$context->getId()])
+                ->getMany()
+                ->isEmpty()
+        ) {
+            return false;
+        }
 
         if ($step === 'details') {
             $output .= $templateMgr->fetch($this->plugin->getTemplateResource('review-customQuestions.tpl'));

@@ -2,7 +2,6 @@
 
 namespace APP\plugins\generic\customQuestions\api\v1\customQuestionResponses;
 
-use APP\plugins\generic\customQuestions\classes\customQuestionResponse\DAO as CustomQuestionResponseDAO;
 use APP\plugins\generic\customQuestions\classes\facades\Repo;
 use PKP\core\APIResponse;
 use PKP\handler\APIHandler;
@@ -50,32 +49,37 @@ class CustomQuestionResponseHandler extends APIHandler
         $params = $slimRequest->getParsedBody();
         $submissionId = $args['submissionId'];
 
-        $customQuestionResponses = [];
         foreach ($slimRequest->getParsedBody() as $fieldName => $value) {
             $fieldNameSplitted = preg_split('/-/', $fieldName);
             $customQuestionId = end($fieldNameSplitted);
             $customQuestion = Repo::customQuestion()->get($customQuestionId);
 
-            $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
-            $customQuestionResponse = $customQuestionResponseDAO->getByCustomQuestionId(
-                $customQuestionId,
-                $submissionId
-            );
+            $customQuestionResponse = Repo::customQuestionResponse()
+                ->getByCustomQuestionId($customQuestionId, $submissionId);
 
             if (is_null($customQuestionResponse)) {
-                $customQuestionResponse = $customQuestionResponseDAO->newDataObject();
-                $customQuestionResponse->setSubmissionId($submissionId);
-                $customQuestionResponse->setCustomQuestionId($customQuestionId);
-                $customQuestionResponseDAO->insert($customQuestionResponse);
+                $customQuestionResponse = Repo::customQuestionResponse()->newDataObject([
+                    'submissionId' => $submissionId,
+                    'customQuestionId' => $customQuestionId,
+                ]);
+                Repo::customQuestionResponse()->add($customQuestionResponse);
             }
 
-            $customQuestionResponse->setValue($value);
-            $customQuestionResponse->setResponseType($customQuestion->getCustomQuestionResponseType());
-            $customQuestionResponseDAO->update($customQuestionResponse);
-
-            $customQuestionResponses[] = $customQuestionResponse->getAllData();
+            Repo::customQuestionResponse()->edit($customQuestionResponse, [
+                'value' => $value,
+                'responseType' => $customQuestion->getCustomQuestionResponseType(),
+            ]);
         }
 
-        return $response->withJson($customQuestionResponses, 200);
+        $customQuestionResponses = Repo::customQuestionResponse()->getCollector()
+            ->filterBySubmissionIds([$submissionId])
+            ->getMany();
+
+        $customQuestionResponsesProps = [];
+        foreach ($customQuestionResponses as $customQuestionResponse) {
+            $customQuestionResponsesProps[] = $customQuestionResponse->getAllData();
+        }
+
+        return $response->withJson($customQuestionResponsesProps, 200);
     }
 }

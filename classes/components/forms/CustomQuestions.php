@@ -3,7 +3,7 @@
 namespace APP\plugins\generic\customQuestions\classes\components\forms;
 
 use APP\plugins\generic\customQuestions\classes\customQuestion\CustomQuestion;
-use APP\plugins\generic\customQuestions\classes\customQuestionResponse\DAO as CustomQuestionResponseDAO;
+use APP\plugins\generic\customQuestions\classes\facades\Repo;
 use Illuminate\Support\LazyCollection;
 use PKP\components\forms\Field;
 use PKP\components\forms\FieldOptions;
@@ -40,11 +40,8 @@ class CustomQuestions extends FormComponent
             }
         }
 
-        $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
-        $customQuestionResponse = $customQuestionResponseDAO->getByCustomQuestionId(
-            $customQuestion->getId(),
-            $submissionId
-        );
+        $customQuestionResponse = Repo::customQuestionResponse()
+            ->getByCustomQuestionId($customQuestion->getId(), $submissionId);
 
         $fieldName = $this->toKebabCase($customQuestion->getLocalizedTitle()) . '-' . $customQuestion->getId();
         $fieldComponents = [
