@@ -5,9 +5,12 @@ namespace APP\plugins\generic\customQuestions\classes\customQuestion;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
 use PKP\core\EntityDAO;
+use PKP\core\traits\EntityWithParent;
 
 class DAO extends EntityDAO
 {
+    use EntityWithParent;
+
     public $schema = 'customQuestion';
 
     public $table = 'custom_questions';
@@ -24,24 +27,14 @@ class DAO extends EntityDAO
         'required' => 'required',
     ];
 
+    public function getParentColumn(): string
+    {
+        return 'context_id';
+    }
+
     public function newDataObject(): CustomQuestion
     {
         return app(CustomQuestion::class);
-    }
-
-    public function exists(int $id): bool
-    {
-        return DB::table($this->table)
-            ->where($this->primaryKeyColumn, '=', $id)
-            ->exists();
-    }
-
-    public function get(int $id): ?CustomQuestion
-    {
-        $row = DB::table($this->table)
-            ->where($this->primaryKeyColumn, $id)
-            ->first();
-        return $row ? $this->fromRow($row) : null;
     }
 
     public function getCount(Collector $query): int
@@ -71,6 +64,11 @@ class DAO extends EntityDAO
                 yield $row->custom_question_id => $this->fromRow($row);
             }
         });
+    }
+
+    public function fromRow(object $row): CustomQuestion
+    {
+        return parent::fromRow($row);
     }
 
     public function insert(CustomQuestion $customQuestion): int

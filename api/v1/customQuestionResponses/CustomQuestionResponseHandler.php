@@ -46,13 +46,15 @@ class CustomQuestionResponseHandler extends APIHandler
 
     public function edit(Request $slimRequest, APIResponse $response, array $args): APIResponse
     {
+        $request = $this->getRequest();
+        $context = $request->getContext();
         $params = $slimRequest->getParsedBody();
         $submissionId = $args['submissionId'];
 
         foreach ($slimRequest->getParsedBody() as $fieldName => $value) {
             $fieldNameSplitted = preg_split('/-/', $fieldName);
             $customQuestionId = end($fieldNameSplitted);
-            $customQuestion = Repo::customQuestion()->get($customQuestionId);
+            $customQuestion = Repo::customQuestion()->get($customQuestionId, $context->getId());
 
             $customQuestionResponse = Repo::customQuestionResponse()
                 ->getByCustomQuestionId($customQuestionId, $submissionId);

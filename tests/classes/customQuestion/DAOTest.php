@@ -30,7 +30,7 @@ class DAOTest extends CustomQuestionsTestCase
         $customQuestion->setPossibleResponses(['Test possible response'], $locale);
         $insertedCustomQuestionId = $customQuestionDAO->insert($customQuestion);
 
-        $fetchedCustomQuestion = $customQuestionDAO->get($insertedCustomQuestionId);
+        $fetchedCustomQuestion = $customQuestionDAO->get($insertedCustomQuestionId, $this->contextId);
         self::assertEquals([
             'id' => $insertedCustomQuestionId,
             'contextId' => $this->contextId,
@@ -50,7 +50,7 @@ class DAOTest extends CustomQuestionsTestCase
         $customQuestion->setPossibleResponses(['Updated possible response'], $locale);
         $customQuestionDAO->update($customQuestion);
 
-        $fetchedCustomQuestion = $customQuestionDAO->get($insertedCustomQuestionId);
+        $fetchedCustomQuestion = $customQuestionDAO->get($insertedCustomQuestionId, $this->contextId);
         self::assertEquals([
             'id' => $insertedCustomQuestionId,
             'contextId' => $this->contextId,
@@ -63,7 +63,7 @@ class DAOTest extends CustomQuestionsTestCase
         ], $fetchedCustomQuestion->_data);
 
         $customQuestionDAO->delete($customQuestion);
-        self::assertFalse($customQuestionDAO->exists($insertedCustomQuestionId));
+        self::assertFalse($customQuestionDAO->exists($insertedCustomQuestionId, $this->contextId));
     }
 
     public function testResequenceQuestions(): void
@@ -85,7 +85,7 @@ class DAOTest extends CustomQuestionsTestCase
 
         $customQuestionDAO->resequence($this->contextId);
 
-        $fetchedCustomQuestion = $customQuestionDAO->get($customQuestion->getId());
+        $fetchedCustomQuestion = $customQuestionDAO->get($customQuestion->getId(), $this->contextId);
         self::assertEquals(++$lastSeq, $fetchedCustomQuestion->getSequence());
     }
 }

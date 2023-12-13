@@ -57,7 +57,7 @@ class RepositoryTest extends CustomQuestionsTestCase
         $insertedCustomQuestionId = $repository->add($customQuestion);
         $params['id'] = $insertedCustomQuestionId;
 
-        $fetchedCustomQuestion = $repository->get($insertedCustomQuestionId);
+        $fetchedCustomQuestion = $repository->get($insertedCustomQuestionId, $this->contextId);
         self::assertEquals($params, $fetchedCustomQuestion->_data);
 
         $params['title']['en'] = 'Updated title';
@@ -68,7 +68,7 @@ class RepositoryTest extends CustomQuestionsTestCase
         $params['possibleResponses'] = ['en' => ['Yes', 'No']];
         $repository->edit($customQuestion, $params);
 
-        $fetchedCustomQuestion = $repository->get($customQuestion->getId());
+        $fetchedCustomQuestion = $repository->get($customQuestion->getId(), $this->contextId);
         self::assertEquals($params, $fetchedCustomQuestion->_data);
 
         $repository->delete($customQuestion);
