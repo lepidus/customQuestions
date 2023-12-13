@@ -70,7 +70,7 @@ class CustomQuestionsTestCase extends DatabaseTestCase
         Hook::add(
             'Schema::get::' . $schemaName,
             function (string $hookName, array $args) use ($schemaName) {
-                $schema = & $args[0];
+                $schema = &$args[0];
 
                 $schemaFile = sprintf(
                     '%s/plugins/generic/customQuestions/schemas/%s.json',
