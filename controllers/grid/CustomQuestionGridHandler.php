@@ -6,20 +6,22 @@ use APP\core\Request;
 use APP\notification\NotificationManager;
 use APP\plugins\generic\customQuestions\classes\facades\Repo;
 use APP\plugins\generic\customQuestions\controllers\grid\form\CustomQuestionForm;
+use APP\plugins\generic\customQuestions\CustomQuestionsPlugin;
 use PKP\controllers\grid\feature\OrderGridItemsFeature;
 use PKP\controllers\grid\GridColumn;
 use PKP\controllers\grid\GridHandler;
 use PKP\core\JSONMessage;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
-use PKP\plugins\PluginRegistry;
 use PKP\security\authorization\ContextAccessPolicy;
 use PKP\security\authorization\PKPSiteAccessPolicy;
 use PKP\security\Role;
 
 class CustomQuestionGridHandler extends GridHandler
 {
-    public function __construct()
+    private $plugin;
+
+    public function __construct(CustomQuestionsPlugin $plugin)
     {
         parent::__construct();
         $this->addRoleAssignment(
@@ -34,6 +36,7 @@ class CustomQuestionGridHandler extends GridHandler
                 'deleteCustomQuestion'
             ]
         );
+        $this->plugin = $plugin;
     }
 
     public function authorize($request, &$args, $roleAssignments): bool
@@ -110,13 +113,12 @@ class CustomQuestionGridHandler extends GridHandler
     public function setDataElementSequence($request, $rowId, $gridDataElement, $newSequence): void
     {
         $gridDataElement->setSequence($newSequence);
-        app(DAO::class)->update($gridDataElement);
+        Repo::customQuestion()->dao->update($gridDataElement);
     }
 
     public function getCustomQuestionFormTemplate(): string
     {
-        $customQuestionsPlugin = PluginRegistry::getPlugin('generic', 'customquestionsplugin');
-        return $customQuestionsPlugin->getTemplateResource('customQuestionForm.tpl');
+        return $this->plugin->getTemplateResource('customQuestionForm.tpl');
     }
 
     public function createCustomQuestion(array $args, Request $request): JSONMessage
