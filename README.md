@@ -14,6 +14,22 @@ The latest release of this plugin is compatible with the following PKP applicati
 2. Under Upload file select the file customQuestions.tar.gz.
 3. Click Save and the plugin will be installed on your website.
 
+## Running Tests
+
+### Unit Tests
+
+To execute the unit tests, run the following command from root of the PKP Appplication directory:
+```bash
+lib/pkp/lib/vendor/phpunit/phpunit/phpunit -c lib/pkp/tests/phpunit.xml plugins/generic/customQuestions/tests
+```
+
+### Integration Tests
+
+To execute Cypress integration tests, run the following command from root of the PKP Appplication directory:
+```bash
+$(npm bin)/cypress run --config '{"specPattern":["plugins/generic/customQuestions/cypress/tests/functional/**/*.cy.js"]}'
+```
+
 # License
 __This plugin is licensed under the GNU General Public License v3.0__
 
