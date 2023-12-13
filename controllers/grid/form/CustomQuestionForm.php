@@ -60,7 +60,10 @@ class CustomQuestionForm extends Form
             return ;
         }
 
-        $customQuestion = Repo::customQuestion()->get($this->customQuestionId);
+        $customQuestion = Repo::customQuestion()->get(
+            $this->customQuestionId,
+            $this->contextId
+        );
         $this->_data = [
             'title' => $customQuestion->getData('title'),
             'description' => $customQuestion->getData('description'),
@@ -80,7 +83,7 @@ class CustomQuestionForm extends Form
         $request = Application::get()->getRequest();
 
         if ($this->customQuestionId) {
-            $customQuestion = Repo::customQuestion()->get($this->customQuestionId);
+            $customQuestion = Repo::customQuestion()->get($this->customQuestionId, $this->contextId);
         } else {
             $customQuestion = Repo::customQuestion()->newDataObject(['sequence' => REALLY_BIG_NUMBER]);
         }

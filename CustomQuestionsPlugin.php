@@ -54,14 +54,14 @@ class CustomQuestionsPlugin extends GenericPlugin
 
     public function addCustomQuestionSchema(string $hookName, array $params): bool
     {
-        $schema = & $params[0];
+        $schema = &$params[0];
         $schema = $this->getJsonSchema('customQuestion');
         return true;
     }
 
     public function addCustomQuestionResponseSchema(string $hookName, array $params): bool
     {
-        $schema = & $params[0];
+        $schema = &$params[0];
         $schema = $this->getJsonSchema('customQuestionResponse');
         return true;
     }
@@ -89,10 +89,10 @@ class CustomQuestionsPlugin extends GenericPlugin
 
     public function setupGridHandler(string $hookName, array $params): bool
     {
-        $component = & $params[0];
-        $componentInstance = & $params[2];
+        $component = &$params[0];
+        $componentInstance = &$params[2];
         if ($component == 'plugins.generic.customQuestions.controllers.grid.CustomQuestionGridHandler') {
-            $componentInstance = new CustomQuestionGridHandler();
+            $componentInstance = new CustomQuestionGridHandler($this);
             return true;
         }
         $listbuilderHandlerClass = 'CustomQuestionResponseItemListbuilderHandler';
@@ -103,7 +103,7 @@ class CustomQuestionsPlugin extends GenericPlugin
         return false;
     }
 
-    public function setupAPIHandler(string $hookname, array $args): void
+    public function setupAPIHandler(string $hookName, array $args): void
     {
         $request = $args[0];
         $router = $request->getRouter();

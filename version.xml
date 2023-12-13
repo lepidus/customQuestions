@@ -3,6 +3,6 @@
 <version>
     <application>customQuestions</application>
     <type>plugins.generic</type>
-    <release>1.0.0.0</release>
-    <date>2023-06-22</date>
+    <release>1.0.1.0</release>
+    <date>2023-12-13</date>
 </version>

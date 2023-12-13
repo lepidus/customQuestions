@@ -39,7 +39,8 @@ class CustomQuestionResponseItemListbuilderHandler extends SetupListbuilderHandl
 
     protected function loadData($request, $filter = null): array
     {
-        $customQuestion = Repo::customQuestion()->get($this->customQuestionId);
+        $context = $request->getContext();
+        $customQuestion = Repo::customQuestion()->get($this->customQuestionId, $context->getId());
         $formattedResponses = [];
         if ($customQuestion) {
             $possibleResponses = $customQuestion->getPossibleResponses(null);

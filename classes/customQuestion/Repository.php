@@ -29,14 +29,14 @@ class Repository
         return $object;
     }
 
-    public function exists(int $id): bool
+    public function exists(int $id, int $contextId = null): bool
     {
-        return $this->dao->exists($id);
+        return $this->dao->exists($id, $contextId);
     }
 
-    public function get(int $id): ?CustomQuestion
+    public function get(int $id, int $contextId = null): ?CustomQuestion
     {
-        return $this->dao->get($id);
+        return $this->dao->get($id, $contextId);
     }
 
     public function add(CustomQuestion $customQuestion): int

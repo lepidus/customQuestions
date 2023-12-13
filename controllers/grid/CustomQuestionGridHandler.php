@@ -6,20 +6,22 @@ use APP\core\Request;
 use APP\notification\NotificationManager;
 use APP\plugins\generic\customQuestions\classes\facades\Repo;
 use APP\plugins\generic\customQuestions\controllers\grid\form\CustomQuestionForm;
+use APP\plugins\generic\customQuestions\CustomQuestionsPlugin;
 use PKP\controllers\grid\feature\OrderGridItemsFeature;
 use PKP\controllers\grid\GridColumn;
 use PKP\controllers\grid\GridHandler;
 use PKP\core\JSONMessage;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
-use PKP\plugins\PluginRegistry;
 use PKP\security\authorization\ContextAccessPolicy;
 use PKP\security\authorization\PKPSiteAccessPolicy;
 use PKP\security\Role;
 
 class CustomQuestionGridHandler extends GridHandler
 {
-    public function __construct()
+    private $plugin;
+
+    public function __construct(CustomQuestionsPlugin $plugin)
     {
         parent::__construct();
         $this->addRoleAssignment(
@@ -34,6 +36,7 @@ class CustomQuestionGridHandler extends GridHandler
                 'deleteCustomQuestion'
             ]
         );
+        $this->plugin = $plugin;
     }
 
     public function authorize($request, &$args, $roleAssignments): bool
@@ -110,20 +113,20 @@ class CustomQuestionGridHandler extends GridHandler
     public function setDataElementSequence($request, $rowId, $gridDataElement, $newSequence): void
     {
         $gridDataElement->setSequence($newSequence);
-        app(DAO::class)->update($gridDataElement);
+        Repo::customQuestion()->dao->update($gridDataElement);
     }
 
-    public function getCustomQuestionFormTemplate(): string
+    public function getCustomQuestionForm(Request $request, int $customQuestionId = null): CustomQuestionForm
     {
-        $customQuestionsPlugin = PluginRegistry::getPlugin('generic', 'customquestionsplugin');
-        return $customQuestionsPlugin->getTemplateResource('customQuestionForm.tpl');
+        $template = $this->plugin->getTemplateResource('customQuestionForm.tpl');
+        $contextId = $request->getContext()->getId();
+
+        return new CustomQuestionForm($template, $contextId, $customQuestionId);
     }
 
     public function createCustomQuestion(array $args, Request $request): JSONMessage
     {
-        $contextId = $request->getContext()->getId();
-        $template = $this->getCustomQuestionFormTemplate();
-        $customQuestionForm = new CustomQuestionForm($template, $contextId);
+        $customQuestionForm = $this->getCustomQuestionForm($request);
         $customQuestionForm->initData();
 
         return new JSONMessage(true, $customQuestionForm->fetch($request));
@@ -132,10 +135,8 @@ class CustomQuestionGridHandler extends GridHandler
     public function updateCustomQuestion(array $args, Request $request): JSONMessage
     {
         $customQuestionId = (int) $request->getUserVar('customQuestionId');
-        $contextId = $request->getContext()->getId();
-        $template = $this->getCustomQuestionFormTemplate();
 
-        $customQuestionForm = new CustomQuestionForm($template, $contextId, $customQuestionId);
+        $customQuestionForm = $this->getCustomQuestionForm($request, $customQuestionId);
         $customQuestionForm->readInputData();
         if ($customQuestionForm->validate()) {
             $customQuestionId = $customQuestionForm->execute();
@@ -153,10 +154,8 @@ class CustomQuestionGridHandler extends GridHandler
     public function editCustomQuestion(array $args, Request $request): JSONMessage
     {
         $customQuestionId = (int) $request->getUserVar('rowId');
-        $contextId = $request->getContext()->getId();
-        $template = $this->getCustomQuestionFormTemplate();
 
-        $customQuestionForm = new CustomQuestionForm($template, $contextId, $customQuestionId);
+        $customQuestionForm = $this->getCustomQuestionForm($request, $customQuestionId);
         $customQuestionForm->initData();
         return new JSONMessage(true, $customQuestionForm->fetch($request));
     }
