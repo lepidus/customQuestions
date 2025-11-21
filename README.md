@@ -6,7 +6,7 @@ A plugin to add custom questions to submission wizard
 
 The latest release of this plugin is compatible with the following PKP applications:
 
-* OPS 3.4.0
+* OJS and OPS 3.4.0
 
 ## Installation
 
@@ -31,8 +31,9 @@ $(npm bin)/cypress run --config '{"specPattern":["plugins/generic/customQuestion
 ```
 
 # License
+
 __This plugin is licensed under the GNU General Public License v3.0__
 
-__Copyright (c) 2023 Lepidus Tecnologia__
+__Copyright (c) 2023-2025 Lepidus Tecnologia__
 
-__Copyright (c) 2023 SciELO__
+__Copyright (c) 2023-2025 SciELO__
