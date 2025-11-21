@@ -142,6 +142,9 @@ describe('Custom Quetions plugin tests', function () {
 			'startSubmission-title-control',
 			'Custom Question Submission'
 		);
+		if (Cypress.env('defaultGenre') === 'Article Text') {
+			cy.get('label:contains("Articles")').click();
+		}
 		cy.get('label:contains("English")').click();
 		cy.get('input[name="submissionRequirements"]').check();
 		cy.get('input[name="privacyConsent"]').check();
@@ -210,12 +213,19 @@ describe('Custom Quetions plugin tests', function () {
 		cy.contains('Make a Submission: Upload Files');
 		cy.get('h2').contains('Upload Files');
 		cy.get('h2').contains('Files');
-		cy.addSubmissionGalleys([{
+
+		let files = [{
 			'file': 'dummy.pdf',
 			'fileName': 'manuscript.pdf',
 			'mimeType': 'application/pdf',
 			'genre': Cypress.env('defaultGenre')
-		}]);
+		}];
+
+		if (Cypress.env('defaultGenre') === 'Article Text') {
+			cy.uploadSubmissionFiles(files);
+		} else {
+			cy.addSubmissionGalleys(files);
+		}
 
 		cy.get('.submissionWizard__footer button').contains('Continue').click();
 		cy.get('.submissionWizard__footer button').contains('Continue').click();

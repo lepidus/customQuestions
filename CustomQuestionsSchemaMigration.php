@@ -17,9 +17,10 @@ class CustomQuestionsSchemaMigration extends Migration
             $table->bigInteger('question_type');
             $table->smallInteger('required')->nullable();
 
+            $contextDao = \APP\core\Application::getContextDAO();
             $table->foreign('context_id')
-                ->references('server_id')
-                ->on('servers')
+                ->references($contextDao->primaryKeyColumn)
+                ->on($contextDao->tableName)
                 ->onDelete('cascade');
             $table->index(['context_id'], 'custom_questions_context_id');
         });

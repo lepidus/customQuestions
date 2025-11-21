@@ -33,7 +33,7 @@ class CustomQuestionsTestCase extends DatabaseTestCase
 
     protected function tearDown(): void
     {
-        $contextDAO = DAORegistry::getDAO('ServerDAO');
+        $contextDAO = \APP\core\Application::getContextDAO();
         $context = $contextDAO->getById($this->contextId);
         $contextDAO->deleteObject($context);
 
@@ -42,7 +42,7 @@ class CustomQuestionsTestCase extends DatabaseTestCase
 
     protected function createContext(): void
     {
-        $contextDAO = DAORegistry::getDAO('ServerDAO');
+        $contextDAO = \APP\core\Application::getContextDAO();
         $context = $contextDAO->newDataObject();
         $context->setData('seq', 2.0);
         $context->setData('enabled', true);
