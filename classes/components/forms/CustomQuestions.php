@@ -43,7 +43,7 @@ class CustomQuestions extends FormComponent
         $customQuestionResponse = Repo::customQuestionResponse()
             ->getByCustomQuestionId($customQuestion->getId(), $submissionId);
 
-        $fieldName = $this->toKebabCase($customQuestion->getLocalizedTitle()) . '-' . $customQuestion->getId();
+        $fieldName = 'customQuestion-' . $customQuestion->getId();
         $fieldComponents = [
             CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD => new FieldText(
                 $fieldName,
