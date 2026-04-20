@@ -16,6 +16,7 @@ class CustomQuestions extends FormComponent
 {
     public $id = 'customQuestions';
     public $method = 'PUT';
+    private array $fieldDataCyByName = [];
 
     public function __construct(string $action, array $locales, LazyCollection $customQuestions, int $submissionId)
     {
@@ -43,7 +44,8 @@ class CustomQuestions extends FormComponent
         $customQuestionResponse = Repo::customQuestionResponse()
             ->getByCustomQuestionId($customQuestion->getId(), $submissionId);
 
-        $fieldName = $this->toKebabCase($customQuestion->getLocalizedTitle()) . '-' . $customQuestion->getId();
+        $fieldName = $this->getFieldName($customQuestion);
+        $this->fieldDataCyByName[$fieldName] = $this->getFieldDataCy($customQuestion);
         $fieldComponents = [
             CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD => new FieldText(
                 $fieldName,
@@ -113,8 +115,24 @@ class CustomQuestions extends FormComponent
         return $fieldComponents[$customQuestion->getQuestionType()];
     }
 
-    private function toKebabCase(string $text): string
+    public function getFieldConfig($field)
     {
-        return strtolower(str_replace(' ', '-', $text));
+        $config = parent::getFieldConfig($field);
+
+        if (isset($this->fieldDataCyByName[$field->name])) {
+            $config['data-cy'] = $this->fieldDataCyByName[$field->name];
+        }
+
+        return $config;
+    }
+
+    private function getFieldName(CustomQuestion $customQuestion): string
+    {
+        return 'customQuestion-' . $customQuestion->getId();
+    }
+
+    private function getFieldDataCy(CustomQuestion $customQuestion): string
+    {
+        return 'custom-question-field-' . $customQuestion->getId();
     }
 }

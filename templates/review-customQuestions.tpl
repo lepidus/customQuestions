@@ -15,6 +15,8 @@
         <div
             v-for="customQuestion in customQuestions"
             class="submissionWizard__reviewPanel__item"
+            :key="customQuestion.id"
+            :data-cy="'custom-question-review-' + customQuestion.id"
         >
             <h4 class="submissionWizard__reviewPanel__item__header">
                 {{ localize(customQuestion.title) }}
