@@ -1,8 +1,10 @@
 describe('Custom Quetions plugin tests', function () {
 
 	let customQuestions;
+	let runId;
 
 	before(function () {
+		runId = `${Date.now()}`;
 		customQuestions = [
 			{
 				title: 'Small text custom question',
@@ -43,7 +45,24 @@ describe('Custom Quetions plugin tests', function () {
 				possibleResponses: ['option 1', 'option 2', 'option 3'],
 				response: 'option 3',
 			},
-		];
+		].map((customQuestion, index) => ({
+			...customQuestion,
+			title: `${customQuestion.title} ${runId}-${index + 1}`,
+		}));
+
+		cy.logout();
+		cy.login('admin', 'admin', 'publicknowledge');
+
+		cy.get('.app__nav a').contains('Website').click();
+		cy.get('button[id="plugins-button"]').click();
+		cy.get('input[id^="select-cell-customquestionsplugin-enabled"]').check();
+		cy.get('input[id^="select-cell-customquestionsplugin-enabled"]').should('be.checked');
+		cy.waitJQuery();
+		cy.get('tr[id*="customquestionsplugin"] a.show_extras').click();
+
+		customQuestions.forEach((customQuestion) => {
+			createCustomQuestion(customQuestion);
+		});
 	});
 
 	const getCustomQuestionFieldSelector = (customQuestion) => {
@@ -55,7 +74,7 @@ describe('Custom Quetions plugin tests', function () {
 	};
 
 	const getCustomQuestionGridRowSelector = (customQuestionId) => {
-		return `tr[id*="customquestiongrid-row-${customQuestionId}"]`;
+		return `tr[id$="customquestiongrid-row-${customQuestionId}"]`;
 	};
 
 	const getExpectedCustomQuestionResponse = (customQuestion) => {
@@ -70,6 +89,17 @@ describe('Custom Quetions plugin tests', function () {
 		if (customQuestion.type === '5') {
 			return customQuestion.possibleResponses[customQuestion.response];
 		}
+	};
+
+	const getSubmissionWizardRoot = () => {
+		return cy.window().then((win) => {
+			const root = Object.values(win.pkp.registry._instances).find((instance) => {
+				return typeof instance.restoreStoredAutosave === 'function'
+					&& typeof instance.autosavesKey !== 'undefined';
+			});
+			expect(root).to.exist;
+			return root;
+		});
 	};
 
 	const createCustomQuestion = (customQuestion) => {
@@ -104,7 +134,8 @@ describe('Custom Quetions plugin tests', function () {
 		cy.get('.pkp_modal_panel > .close').click();
 		cy.wait(500);
 		cy.get('a[id*="customquestionsplugin-settings"]').click();
-		cy.contains('tr[id*="customquestiongrid-row"]', customQuestion.title)
+		cy.contains('tr[id*="customquestiongrid-row"] .label', customQuestion.title)
+			.closest('tr[id*="customquestiongrid-row"]')
 			.invoke('attr', 'id')
 			.then((rowId) => {
 				customQuestion.id = Number(rowId.match(/customquestiongrid-row-(\d+)/)[1]);
@@ -115,6 +146,7 @@ describe('Custom Quetions plugin tests', function () {
 	};
 
 	it('Creates and exercises a custom question', function () {
+		cy.logout();
 		cy.login('admin', 'admin', 'publicknowledge');
 
 		cy.get('.app__nav a').contains('Website').click();
@@ -126,7 +158,7 @@ describe('Custom Quetions plugin tests', function () {
 		cy.get('tr[id*="customquestionsplugin"] a.show_extras').click();
 
 		const temporaryCustomQuestion = {
-			title: 'Here is my custom question.',
+			title: `Here is my custom question. ${runId}`,
 			description: 'Question description.',
 			required: true,
 			type: '4',
@@ -161,14 +193,11 @@ describe('Custom Quetions plugin tests', function () {
 
 			cy.get(rowSelector).should('not.exist');
 			cy.get('.pkp_modal_panel > .close').click();
-
-			customQuestions.forEach((customQuestion) => {
-				createCustomQuestion(customQuestion);
-			});
 		});
 	});
 
 	it('Displays custom questions in submission wizard', function () {
+		cy.logout();
 		cy.login('ccorino', null, 'publicknowledge');
 
 		cy.contains('New Submission').click();
@@ -341,5 +370,62 @@ describe('Custom Quetions plugin tests', function () {
 					.should('have.attr', 'label', customQuestion.response);
 			}
 		});
+	});
+
+	it('Restores legacy autosaves for custom questions', function () {
+		const restoredValue = 'Legacy autosave response';
+		const targetQuestion = customQuestions.find((customQuestion) => customQuestion.type === '3');
+
+		cy.logout();
+		cy.login('ccorino', null, 'publicknowledge');
+		cy.contains('New Submission').click();
+		cy.setTinyMceContent(
+			'startSubmission-title-control',
+			'Custom Question Legacy Autosave Submission'
+		);
+		if (Cypress.env('defaultGenre') === 'Article Text') {
+			cy.get('label:contains("Articles")').click();
+		}
+		cy.get('label:contains("English")').click();
+		cy.get('input[name="submissionRequirements"]').check();
+		cy.get('input[name="privacyConsent"]').check();
+		cy.contains('Begin Submission').click();
+		cy.contains('Make a Submission: Details');
+
+		getSubmissionWizardRoot().then((root) => {
+			const customQuestionsForm = root.steps
+				.flatMap((step) => step.sections)
+				.find((section) => section.type === 'form' && section.form.id === 'customQuestions')
+				.form;
+			const targetField = customQuestionsForm.fields.find(
+				(field) => field.name === `customQuestion-${targetQuestion.id}`
+			);
+
+			expect(targetField.legacyName).to.be.a('string');
+
+			window.localStorage.setItem(
+				root.autosavesKey,
+				JSON.stringify([
+					{
+						id: 'customQuestions',
+						timestamp: Date.now(),
+						url: customQuestionsForm.action,
+						data: {
+							[targetField.legacyName]: {
+								en: restoredValue,
+							},
+						},
+					},
+				])
+			);
+		});
+
+		cy.reload();
+		cy.get('.modal__panel').contains('Yes').click();
+		cy.get(getCustomQuestionFieldSelector(targetQuestion))
+			.find('textarea[id*="-control-en"]')
+			.then(($textarea) => {
+				cy.getTinyMceContent($textarea.attr('id')).should('eq', `<p>${restoredValue}</p>`);
+			});
 	});
 });

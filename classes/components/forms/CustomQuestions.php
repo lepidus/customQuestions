@@ -17,6 +17,7 @@ class CustomQuestions extends FormComponent
     public $id = 'customQuestions';
     public $method = 'PUT';
     private array $fieldDataCyByName = [];
+    private array $legacyFieldNamesByName = [];
 
     public function __construct(string $action, array $locales, LazyCollection $customQuestions, int $submissionId)
     {
@@ -45,6 +46,7 @@ class CustomQuestions extends FormComponent
             ->getByCustomQuestionId($customQuestion->getId(), $submissionId);
 
         $fieldName = $this->getFieldName($customQuestion);
+        $this->legacyFieldNamesByName[$fieldName] = $this->getLegacyFieldName($customQuestion);
         $this->fieldDataCyByName[$fieldName] = $this->getFieldDataCy($customQuestion);
         $fieldComponents = [
             CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD => new FieldText(
@@ -119,6 +121,10 @@ class CustomQuestions extends FormComponent
     {
         $config = parent::getFieldConfig($field);
 
+        if (isset($this->legacyFieldNamesByName[$field->name])) {
+            $config['legacyName'] = $this->legacyFieldNamesByName[$field->name];
+        }
+
         if (isset($this->fieldDataCyByName[$field->name])) {
             $config['data-cy'] = $this->fieldDataCyByName[$field->name];
         }
@@ -131,8 +137,18 @@ class CustomQuestions extends FormComponent
         return 'customQuestion-' . $customQuestion->getId();
     }
 
+    private function getLegacyFieldName(CustomQuestion $customQuestion): string
+    {
+        return $this->toKebabCase($customQuestion->getLocalizedTitle()) . '-' . $customQuestion->getId();
+    }
+
     private function getFieldDataCy(CustomQuestion $customQuestion): string
     {
         return 'custom-question-field-' . $customQuestion->getId();
+    }
+
+    private function toKebabCase(string $text): string
+    {
+        return strtolower(str_replace(' ', '-', $text));
     }
 }

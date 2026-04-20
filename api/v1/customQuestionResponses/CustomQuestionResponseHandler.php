@@ -48,13 +48,18 @@ class CustomQuestionResponseHandler extends APIHandler
     {
         $request = $this->getRequest();
         $context = $request->getContext();
-        $params = $slimRequest->getParsedBody();
         $submissionId = $args['submissionId'];
 
         foreach ($slimRequest->getParsedBody() as $fieldName => $value) {
-            $fieldNameSplitted = preg_split('/-/', $fieldName);
-            $customQuestionId = end($fieldNameSplitted);
+            $customQuestionId = $this->extractCustomQuestionIdFromFieldName($fieldName);
+            if (is_null($customQuestionId)) {
+                continue;
+            }
+
             $customQuestion = Repo::customQuestion()->get($customQuestionId, $context->getId());
+            if (is_null($customQuestion)) {
+                continue;
+            }
 
             $customQuestionResponse = Repo::customQuestionResponse()
                 ->getByCustomQuestionId($customQuestionId, $submissionId);
@@ -83,5 +88,14 @@ class CustomQuestionResponseHandler extends APIHandler
         }
 
         return $response->withJson($customQuestionResponsesProps, 200);
+    }
+
+    protected function extractCustomQuestionIdFromFieldName(string $fieldName): ?int
+    {
+        if (!preg_match('/-(\d+)$/', $fieldName, $matches)) {
+            return null;
+        }
+
+        return (int) $matches[1];
     }
 }
