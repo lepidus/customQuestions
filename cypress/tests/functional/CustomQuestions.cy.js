@@ -77,10 +77,17 @@ describe('Custom Quetions plugin tests', function () {
 		cy.wait(500);
 		cy.get('.pkp_modal_panel > .close').click();
 		cy.wait(500);
-	};
 
-	const toKebabCase = (text) => {
-		return text.toLowerCase().replace(/ /g, '-');
+		cy.get('a[id*="customquestionsplugin-settings"]').click();
+		cy.contains('tr[id*="customquestiongrid-row"] .label', customQuestion.title)
+			.closest('tr[id*="customquestiongrid-row"]')
+			.invoke('attr', 'id')
+			.then((rowId) => {
+				customQuestion.id = Number(rowId.match(/customquestiongrid-row-(\d+)/)[1]);
+			});
+		cy.get('.pkp_modal_panel > .close').click();
+		cy.wait(500);
+		return cy.wrap(customQuestion);
 	};
 
 	it('Creates and exercises a custom question', function () {
@@ -155,56 +162,56 @@ describe('Custom Quetions plugin tests', function () {
 		cy.setTinyMceContent('titleAbstract-abstract-control-en', 'Checking custom questions in submission wizard.');
 
 		customQuestions.forEach((customQuestion) => {
-			let kebabTitle = toKebabCase(customQuestion.title);
+			let customQuestionId = 'customQuestion-' + customQuestion.id;
 
-			cy.get(`label[for^="customQuestions-${kebabTitle}"], legend`).contains(customQuestion.title);
+			cy.get(`label[for^="customQuestions-${customQuestionId}"], legend`).contains(customQuestion.title);
 
 			if (customQuestion.description) {
-				cy.get(`div[id^="customQuestions-${kebabTitle}"][id*="description"]`).contains(customQuestion.description);
+				cy.get(`div[id^="customQuestions-${customQuestionId}"][id*="description"]`).contains(customQuestion.description);
 			}
 
 			if (customQuestion.required) {
-				cy.get(`label[for^="customQuestions-${kebabTitle}"] span, legend:contains(${customQuestion.title}) span`).should('have.class', 'pkpFormFieldLabel__required');
+				cy.get(`label[for^="customQuestions-${customQuestionId}"] span, legend:contains(${customQuestion.title}) span`).should('have.class', 'pkpFormFieldLabel__required');
 			}
 
 			if (customQuestion.type === '1') {
-				cy.get(`input[name^="${kebabTitle}"]`).should('have.attr', 'type', 'text');
-				cy.get(`input[name^="${kebabTitle}"]`).parents('.pkpFormField--sizesmall');
-				cy.get(`input[name^="${kebabTitle}"][id*="-control-en"]`).clear().type(customQuestion.response);
+				cy.get(`input[name^="${customQuestionId}"]`).should('have.attr', 'type', 'text');
+				cy.get(`input[name^="${customQuestionId}"]`).parents('.pkpFormField--sizesmall');
+				cy.get(`input[name^="${customQuestionId}"][id*="-control-en"]`).clear().type(customQuestion.response);
 			}
 			if (customQuestion.type === '2') {
-				cy.get(`input[name^="${kebabTitle}"]`).should('have.attr', 'type', 'text');
-				cy.get(`input[name^="${kebabTitle}"]`).parents('.pkpFormField--sizelarge');
-				cy.get(`input[name^="${kebabTitle}"][id*="-control-en"]`).clear().type(customQuestion.response);
+				cy.get(`input[name^="${customQuestionId}"]`).should('have.attr', 'type', 'text');
+				cy.get(`input[name^="${customQuestionId}"]`).parents('.pkpFormField--sizelarge');
+				cy.get(`input[name^="${customQuestionId}"][id*="-control-en"]`).clear().type(customQuestion.response);
 
 			}
 			if (customQuestion.type === '3') {
-				cy.get(`textarea[id^="customQuestions-${kebabTitle}"][id*="-control-en"]`).then(($textarea) => {
+				cy.get(`textarea[id^="customQuestions-${customQuestionId}"][id*="-control-en"]`).then(($textarea) => {
 					const fieldId = $textarea.attr('id');
 					cy.setTinyMceContent(fieldId, customQuestion.response);
 				});
 			}
 			if (customQuestion.type === '4') {
-				cy.get(`input[name^="${kebabTitle}"]`).should('have.attr', 'type', 'checkbox');
+				cy.get(`input[name^="${customQuestionId}"]`).should('have.attr', 'type', 'checkbox');
 				customQuestion.possibleResponses.forEach((response) => {
-					cy.get(`input[name^="${kebabTitle}"]`).next().contains(response);
+					cy.get(`input[name^="${customQuestionId}"]`).next().contains(response);
 				});
 				customQuestion.response.forEach((response) => {
-					cy.get(`input[name^="${kebabTitle}"][value=${response}]`).check();
+					cy.get(`input[name^="${customQuestionId}"][value=${response}]`).check();
 				});
 			}
 			if (customQuestion.type === '5') {
-				cy.get(`input[name^="${kebabTitle}"]`).should('have.attr', 'type', 'radio');
+				cy.get(`input[name^="${customQuestionId}"]`).should('have.attr', 'type', 'radio');
 				customQuestion.possibleResponses.forEach((response) => {
-					cy.get(`input[name^="${kebabTitle}"]`).next().contains(response);
+					cy.get(`input[name^="${customQuestionId}"]`).next().contains(response);
 				});
-				cy.get(`input[name^="${kebabTitle}"][value=${customQuestion.response}]`).check();
+				cy.get(`input[name^="${customQuestionId}"][value=${customQuestion.response}]`).check();
 			}
 			if (customQuestion.type === '6') {
 				customQuestion.possibleResponses.forEach((response) => {
-					cy.get(`select[id^="customQuestions-${kebabTitle}"]`).children('option').contains(response);
+					cy.get(`select[id^="customQuestions-${customQuestionId}"]`).children('option').contains(response);
 				});
-				cy.get(`select[id^="customQuestions-${kebabTitle}"]`).select(customQuestion.response);
+				cy.get(`select[id^="customQuestions-${customQuestionId}"]`).select(customQuestion.response);
 			}
 		});
 
@@ -263,27 +270,27 @@ describe('Custom Quetions plugin tests', function () {
 		cy.get('#customQuestions-button').click();
 
 		customQuestions.forEach((customQuestion) => {
-			let kebabTitle = toKebabCase(customQuestion.title);
+			let customQuestionId = 'customQuestion-' + customQuestion.id;
 
 			if ([1, 2].includes(customQuestion.type)) {
-				cy.get(`input[name^="${kebabTitle}"][id*="-control-en"]`).should('have.value', customQuestion.response)
+				cy.get(`input[name^="${customQuestionId}"][id*="-control-en"]`).should('have.value', customQuestion.response)
 			}
 			if (customQuestion.type === '3') {
-				cy.get(`textarea[id^="customQuestions-${kebabTitle}"][id*="-control-en"]`).then(($textarea) => {
+				cy.get(`textarea[id^="customQuestions-${customQuestionId}"][id*="-control-en"]`).then(($textarea) => {
 					const fieldId = $textarea.attr('id');
 					cy.getTinyMceContent(fieldId).should('eq', `<p>${customQuestion.response}</p>`);
 				});
 			}
 			if (customQuestion.type === '4') {
 				customQuestion.response.forEach((response) => {
-					cy.get(`input[name^="${kebabTitle}"][value=${response}]`).should('be.checked');
+					cy.get(`input[name^="${customQuestionId}"][value=${response}]`).should('be.checked');
 				});
 			}
 			if (customQuestion.type === '5') {
-				cy.get(`input[name^="${kebabTitle}"][value=${customQuestion.response}]`).should('be.checked');
+				cy.get(`input[name^="${customQuestionId}"][value=${customQuestion.response}]`).should('be.checked');
 			}
 			if (customQuestion.type === '6') {
-				cy.get(`select[id^="customQuestions-${kebabTitle}"] option:selected`).should('have.attr', 'label', customQuestion.response);
+				cy.get(`select[id^="customQuestions-${customQuestionId}"] option:selected`).should('have.attr', 'label', customQuestion.response);
 			}
 		});
 	});
