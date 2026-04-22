@@ -52,8 +52,8 @@ class CustomQuestionResponseHandler extends APIHandler
         $submissionId = $args['submissionId'];
 
         foreach ($slimRequest->getParsedBody() as $fieldName => $value) {
-            $fieldNameSplitted = preg_split('/-/', $fieldName);
-            $customQuestionId = end($fieldNameSplitted);
+            $fieldNameParts = explode('-', $fieldName);
+            $customQuestionId = (int) array_pop($fieldNameParts);
             $customQuestion = Repo::customQuestion()->get($customQuestionId, $context->getId());
 
             $customQuestionResponse = Repo::customQuestionResponse()
