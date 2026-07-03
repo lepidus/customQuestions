@@ -143,7 +143,7 @@ describe('Custom Quetions plugin tests', function () {
 		});
 	});
 
-	it('Requires answers to custom questions for all field types', function () {
+	it('Requires custom question answers before submission', function () {
 		cy.login('ccorino', null, 'publicknowledge');
 
 		cy.contains('New Submission').click();
@@ -165,6 +165,54 @@ describe('Custom Quetions plugin tests', function () {
 			'titleAbstract-abstract-control-en',
 			'Checking required custom questions in submission wizard.'
 		);
+
+		const fieldAssertions = {
+			'1': (customQuestionId) => {
+				cy.get(`input[name^="${customQuestionId}"]`).should('have.attr', 'type', 'text');
+				cy.get(`input[name^="${customQuestionId}"]`).parents('.pkpFormField--sizesmall');
+			},
+			'2': (customQuestionId) => {
+				cy.get(`input[name^="${customQuestionId}"]`).should('have.attr', 'type', 'text');
+				cy.get(`input[name^="${customQuestionId}"]`).parents('.pkpFormField--sizelarge');
+			},
+			'4': (customQuestionId, customQuestion) => {
+				cy.get(`input[name^="${customQuestionId}"]`).should('have.attr', 'type', 'checkbox');
+				customQuestion.possibleResponses.forEach((response) => {
+					cy.get(`input[name^="${customQuestionId}"]`).next().contains(response);
+				});
+			},
+			'5': (customQuestionId, customQuestion) => {
+				cy.get(`input[name^="${customQuestionId}"]`).should('have.attr', 'type', 'radio');
+				customQuestion.possibleResponses.forEach((response) => {
+					cy.get(`input[name^="${customQuestionId}"]`).next().contains(response);
+				});
+			},
+			'6': (customQuestionId, customQuestion) => {
+				customQuestion.possibleResponses.forEach((response) => {
+					cy.get(`select[id^="customQuestions-${customQuestionId}"]`)
+						.children('option')
+						.contains(response);
+				});
+			},
+		};
+
+		customQuestions.forEach((customQuestion) => {
+			const customQuestionId = 'customQuestion-' + customQuestion.id;
+
+			cy.get(`label[for^="customQuestions-${customQuestionId}"], legend`).contains(customQuestion.title);
+
+			if (customQuestion.description) {
+				cy.get(`div[id^="customQuestions-${customQuestionId}"][id*="description"]`).contains(customQuestion.description);
+			}
+
+			if (customQuestion.required) {
+				cy.get(`label[for^="customQuestions-${customQuestionId}"] span, legend:contains(${customQuestion.title}) span`)
+					.should('have.class', 'pkpFormFieldLabel__required');
+			}
+
+			fieldAssertions[customQuestion.type]?.(customQuestionId, customQuestion);
+		});
+
 		cy.get('.submissionWizard__footer button').contains('Continue').click();
 
 		cy.contains('Make a Submission: Upload Files');
@@ -189,111 +237,67 @@ describe('Custom Quetions plugin tests', function () {
 		cy.contains('Make a Submission: Review');
 
 		customQuestions.forEach((customQuestion) => {
-			cy.get('h3').contains('Custom questions')
+			cy
+				.get('h3')
+				.contains('Custom questions')
 				.parents('.submissionWizard__reviewPanel')
-				.find('h4').contains(customQuestion.title)
+				.find('h4')
+				.contains(customQuestion.title)
 				.parents('.submissionWizard__reviewPanel__item')
 				.find('.submissionWizard__reviewEmptyWarning')
 				.contains('This field is required.');
 		});
 
 		cy.get('button:contains("Submit")').should('be.disabled');
-	});
 
-	it('Displays custom questions in submission wizard', function () {
-		cy.login('ccorino', null, 'publicknowledge');
+		cy
+			.get('h3')
+			.contains('Custom questions')
+			.siblings('.submissionWizard__reviewPanel__edit')
+			.contains('Edit')
+			.click();
 
-		cy.contains('New Submission').click();
-
-		cy.setTinyMceContent(
-			'startSubmission-title-control',
-			'Custom Question Submission'
-		);
-		if (Cypress.env('defaultGenre') === 'Article Text') {
-			cy.get('label:contains("Articles")').click();
-		}
-		cy.get('label:contains("English")').click();
-		cy.get('input[name="submissionRequirements"]').check();
-		cy.get('input[name="privacyConsent"]').check();
-		cy.contains('Begin Submission').click();
-
-		cy.contains('Make a Submission: Details');
-
-		cy.setTinyMceContent('titleAbstract-abstract-control-en', 'Checking custom questions in submission wizard.');
-
-		customQuestions.forEach((customQuestion) => {
-			let customQuestionId = 'customQuestion-' + customQuestion.id;
-
-			cy.get(`label[for^="customQuestions-${customQuestionId}"], legend`).contains(customQuestion.title);
-
-			if (customQuestion.description) {
-				cy.get(`div[id^="customQuestions-${customQuestionId}"][id*="description"]`).contains(customQuestion.description);
-			}
-
-			if (customQuestion.required) {
-				cy.get(`label[for^="customQuestions-${customQuestionId}"] span, legend:contains(${customQuestion.title}) span`).should('have.class', 'pkpFormFieldLabel__required');
-			}
-
-			if (customQuestion.type === '1') {
-				cy.get(`input[name^="${customQuestionId}"]`).should('have.attr', 'type', 'text');
-				cy.get(`input[name^="${customQuestionId}"]`).parents('.pkpFormField--sizesmall');
-				cy.get(`input[name^="${customQuestionId}"][id*="-control-en"]`).clear().type(customQuestion.response);
-			}
-			if (customQuestion.type === '2') {
-				cy.get(`input[name^="${customQuestionId}"]`).should('have.attr', 'type', 'text');
-				cy.get(`input[name^="${customQuestionId}"]`).parents('.pkpFormField--sizelarge');
-				cy.get(`input[name^="${customQuestionId}"][id*="-control-en"]`).clear().type(customQuestion.response);
-
-			}
-			if (customQuestion.type === '3') {
-				cy.get(`textarea[id^="customQuestions-${customQuestionId}"][id*="-control-en"]`).then(($textarea) => {
-					const fieldId = $textarea.attr('id');
-					cy.setTinyMceContent(fieldId, customQuestion.response);
-				});
-			}
-			if (customQuestion.type === '4') {
-				cy.get(`input[name^="${customQuestionId}"]`).should('have.attr', 'type', 'checkbox');
-				customQuestion.possibleResponses.forEach((response) => {
-					cy.get(`input[name^="${customQuestionId}"]`).next().contains(response);
-				});
+		const answerQuestionByType = {
+			'1': (customQuestionId, customQuestion) => {
+				cy
+					.get(`input[name^="${customQuestionId}"][id*="-control-en"]`)
+					.clear()
+					.type(customQuestion.response);
+			},
+			'2': (customQuestionId, customQuestion) => {
+				cy
+					.get(`input[name^="${customQuestionId}"][id*="-control-en"]`)
+					.clear()
+					.type(customQuestion.response);
+			},
+			'3': (customQuestionId, customQuestion) => {
+				cy
+					.get(`textarea[id^="customQuestions-${customQuestionId}"][id*="-control-en"]`)
+					.then(($textarea) => {
+						cy.setTinyMceContent($textarea.attr('id'), customQuestion.response);
+					});
+			},
+			'4': (customQuestionId, customQuestion) => {
 				customQuestion.response.forEach((response) => {
 					cy.get(`input[name^="${customQuestionId}"][value=${response}]`).check();
 				});
-			}
-			if (customQuestion.type === '5') {
-				cy.get(`input[name^="${customQuestionId}"]`).should('have.attr', 'type', 'radio');
-				customQuestion.possibleResponses.forEach((response) => {
-					cy.get(`input[name^="${customQuestionId}"]`).next().contains(response);
-				});
-				cy.get(`input[name^="${customQuestionId}"][value=${customQuestion.response}]`).check();
-			}
-			if (customQuestion.type === '6') {
-				customQuestion.possibleResponses.forEach((response) => {
-					cy.get(`select[id^="customQuestions-${customQuestionId}"]`).children('option').contains(response);
-				});
-				cy.get(`select[id^="customQuestions-${customQuestionId}"]`).select(customQuestion.response);
-			}
+			},
+			'5': (customQuestionId, customQuestion) => {
+				cy.get(`input[name^="${customQuestionId}"][value=${customQuestion.response}]`)
+					.check();
+			},
+			'6': (customQuestionId, customQuestion) => {
+				cy.get(`select[id^="customQuestions-${customQuestionId}"]`)
+					.select(customQuestion.response);
+			},
+		};
+
+		customQuestions.forEach((customQuestion) => {
+			const customQuestionId = 'customQuestion-' + customQuestion.id;
+			answerQuestionByType[customQuestion.type]?.(customQuestionId, customQuestion);
 		});
 
 		cy.get('.submissionWizard__footer button').contains('Continue').click();
-
-		cy.contains('Make a Submission: Upload Files');
-		cy.get('h2').contains('Upload Files');
-		cy.get('h2').contains('Files');
-
-		let files = [{
-			'file': 'dummy.pdf',
-			'fileName': 'manuscript.pdf',
-			'mimeType': 'application/pdf',
-			'genre': Cypress.env('defaultGenre')
-		}];
-
-		if (Cypress.env('defaultGenre') === 'Article Text') {
-			cy.uploadSubmissionFiles(files);
-		} else {
-			cy.addSubmissionGalleys(files);
-		}
-
 		cy.get('.submissionWizard__footer button').contains('Continue').click();
 		cy.get('.submissionWizard__footer button').contains('Continue').click();
 		cy.get('.submissionWizard__footer button').contains('Continue').click();
@@ -305,17 +309,29 @@ describe('Custom Quetions plugin tests', function () {
 				.parents('.submissionWizard__reviewPanel')
 				.find('h4').then(($h4) => {
 					if ([1, 2, 3].includes(customQuestion.type)) {
-						cy.wrap($h4).contains(customQuestion.title).siblings('.submissionWizard__reviewPanel__item__value').contains(customQuestion.response);
+						cy
+							.wrap($h4)
+							.contains(customQuestion.title)
+							.siblings('.submissionWizard__reviewPanel__item__value')
+							.contains(customQuestion.response);
 					}
 					if ([5, 6].includes(customQuestion.type)) {
-						cy.wrap($h4).contains(customQuestion.title).siblings('.submissionWizard__reviewPanel__item__value').contains(customQuestion.possibleResponses[customQuestion.response]);
+						cy
+							.wrap($h4)
+							.contains(customQuestion.title)
+							.siblings('.submissionWizard__reviewPanel__item__value')
+							.contains(customQuestion.possibleResponses[customQuestion.response]);
 					}
 					if (customQuestion.type === '4') {
 						let responses = [];
 						customQuestion.response.forEach((response) => {
 							responses.push(customQuestion.possibleResponses[response]);
 						});
-						cy.wrap($h4).contains(customQuestion.title).siblings('.submissionWizard__reviewPanel__item__value').contains(responses.join(', '));
+						cy
+							.wrap($h4)
+							.contains(customQuestion.title)
+							.siblings('.submissionWizard__reviewPanel__item__value')
+							.contains(responses.join(', '));
 					}
 				});
 		});
