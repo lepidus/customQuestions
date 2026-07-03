@@ -75,7 +75,7 @@ msgid "plugins.generic.customQuestions.form.questionTypeRequired"
 msgstr "It's necessary to define the type of question."
 
 msgid "plugins.generic.customQuestions.confirmDelete"
-msgstr "Confirm delete of a question..."
+msgstr "Deleting this question will also delete any replies to it. Are you sure you wish to do this?"
 
 msgid "plugins.generic.customQuestions.submissionWizard.name"
 msgstr "Custom questions"

@@ -75,7 +75,7 @@ msgid "plugins.generic.customQuestions.form.questionTypeRequired"
 msgstr "É necessário definir o tipo da pergunta."
 
 msgid "plugins.generic.customQuestions.confirmDelete"
-msgstr "Confirmar a exclusão da pergunta..."
+msgstr "Excluir esta pergunta também excluirá todas as respostas a ela. Tem certeza de que deseja fazer isso?"
 
 msgid "plugins.generic.customQuestions.submissionWizard.name"
 msgstr "Perguntas personalizadas"
