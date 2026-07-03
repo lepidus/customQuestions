@@ -13,6 +13,7 @@ describe('Custom Quetions plugin tests', function () {
 			},
 			{
 				title: 'Large text custom question',
+				required: true,
 				type: '2',
 				response: 'Large text response',
 			},
@@ -25,6 +26,7 @@ describe('Custom Quetions plugin tests', function () {
 			},
 			{
 				title: 'Checkbox custom question',
+				required: true,
 				type: '4',
 				possibleResponses: ['option 1', 'option 2', 'option 3'],
 				response: [0, 2],
@@ -39,6 +41,7 @@ describe('Custom Quetions plugin tests', function () {
 			},
 			{
 				title: 'Select custom question',
+				required: true,
 				type: '6',
 				possibleResponses: ['option 1', 'option 2', 'option 3'],
 				response: 'option 3',
@@ -138,6 +141,63 @@ describe('Custom Quetions plugin tests', function () {
 		customQuestions.forEach((customQuestion) => {
 			createCustomQuestion(customQuestion);
 		});
+	});
+
+	it('Requires answers to custom questions for all field types', function () {
+		cy.login('ccorino', null, 'publicknowledge');
+
+		cy.contains('New Submission').click();
+
+		cy.setTinyMceContent(
+			'startSubmission-title-control',
+			'Required Custom Question Submission'
+		);
+		if (Cypress.env('defaultGenre') === 'Article Text') {
+			cy.get('label:contains("Articles")').click();
+		}
+		cy.get('label:contains("English")').click();
+		cy.get('input[name="submissionRequirements"]').check();
+		cy.get('input[name="privacyConsent"]').check();
+		cy.contains('Begin Submission').click();
+
+		cy.contains('Make a Submission: Details');
+		cy.setTinyMceContent(
+			'titleAbstract-abstract-control-en',
+			'Checking required custom questions in submission wizard.'
+		);
+		cy.get('.submissionWizard__footer button').contains('Continue').click();
+
+		cy.contains('Make a Submission: Upload Files');
+
+		let files = [{
+			'file': 'dummy.pdf',
+			'fileName': 'manuscript.pdf',
+			'mimeType': 'application/pdf',
+			'genre': Cypress.env('defaultGenre')
+		}];
+
+		if (Cypress.env('defaultGenre') === 'Article Text') {
+			cy.uploadSubmissionFiles(files);
+		} else {
+			cy.addSubmissionGalleys(files);
+		}
+
+		cy.get('.submissionWizard__footer button').contains('Continue').click();
+		cy.get('.submissionWizard__footer button').contains('Continue').click();
+		cy.get('.submissionWizard__footer button').contains('Continue').click();
+
+		cy.contains('Make a Submission: Review');
+
+		customQuestions.forEach((customQuestion) => {
+			cy.get('h3').contains('Custom questions')
+				.parents('.submissionWizard__reviewPanel')
+				.find('h4').contains(customQuestion.title)
+				.parents('.submissionWizard__reviewPanel__item')
+				.find('.submissionWizard__reviewEmptyWarning')
+				.contains('This field is required.');
+		});
+
+		cy.get('button:contains("Submit")').should('be.disabled');
 	});
 
 	it('Displays custom questions in submission wizard', function () {
