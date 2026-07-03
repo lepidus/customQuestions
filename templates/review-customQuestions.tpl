@@ -19,6 +19,32 @@
             <h4 class="submissionWizard__reviewPanel__item__header">
                 {{ localize(customQuestion.title) }}
             </h4>
+            <template v-for="fieldName in ['customQuestion-' + customQuestion.id]">
+                <template v-if="errors[fieldName]">
+                    <template v-if="Array.isArray(errors[fieldName])">
+                        <notification
+                            v-for="(error, i) in errors[fieldName]"
+                            :key="fieldName + '-' + i"
+                            type="warning"
+                            class="submissionWizard__reviewEmptyWarning"
+                        >
+                            <icon icon="exclamation-triangle" :inline="true"></icon>
+                            {{ error }}
+                        </notification>
+                    </template>
+                    <template v-else v-for="(localizedErrors, localeKey) in errors[fieldName]">
+                        <notification
+                            v-for="(error, i) in localizedErrors"
+                            :key="fieldName + '-' + localeKey + '-' + i"
+                            type="warning"
+                            class="submissionWizard__reviewEmptyWarning"
+                        >
+                            <icon icon="exclamation-triangle" :inline="true"></icon>
+                            {{ error }}
+                        </notification>
+                    </template>
+                </template>
+            </template>
                 <div
                     v-if="!customQuestionResponses.find(response => response.customQuestionId == customQuestion.id)?.value"
                     class="submissionWizard__reviewPanel__item__value"

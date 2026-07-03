@@ -6,6 +6,7 @@ use APP\core\Application;
 use APP\core\Request;
 use APP\pages\submission\SubmissionHandler;
 use APP\plugins\generic\customQuestions\classes\components\forms\CustomQuestions;
+use APP\plugins\generic\customQuestions\classes\customQuestion\CustomQuestion;
 use APP\plugins\generic\customQuestions\classes\facades\Repo;
 use APP\plugins\generic\customQuestions\CustomQuestionsPlugin;
 use APP\submission\Submission;
@@ -247,5 +248,74 @@ class CustomQuestionsHookCallbacks
         );
 
         return false;
+    }
+
+    public function validateRequiredCustomQuestionResponses(string $hookName, array $params): bool
+    {
+        $errors = &$params[0];
+        $submission = $params[1];
+        $context = $params[2];
+        $locale = $submission->getLocale() ?: $context->getData('primaryLocale');
+
+        $customQuestions = Repo::customQuestion()->getCollector()
+            ->filterByContextIds([$context->getId()])
+            ->getMany();
+
+        foreach ($customQuestions as $customQuestion) {
+            if (!$customQuestion->getRequired()) {
+                continue;
+            }
+
+            $customQuestionResponse = Repo::customQuestionResponse()
+                ->getByCustomQuestionId($customQuestion->getId(), $submission->getId());
+
+            if (!$this->isCustomQuestionResponseMissing($customQuestion, $customQuestionResponse?->getValue(), $locale)) {
+                continue;
+            }
+
+            $fieldName = 'customQuestion-' . $customQuestion->getId();
+            $errors[$fieldName] = $this->getRequiredCustomQuestionError($customQuestion, $locale);
+        }
+
+        return false;
+    }
+
+    private function isCustomQuestionResponseMissing(CustomQuestion $customQuestion, $value, string $locale): bool
+    {
+        switch ($customQuestion->getQuestionType()) {
+            case CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD:
+            case CustomQuestion::CUSTOM_QUESTION_TYPE_TEXT_FIELD:
+            case CustomQuestion::CUSTOM_QUESTION_TYPE_TEXTAREA:
+                return !is_array($value)
+                    || !isset($value[$locale])
+                    || trim((string) $value[$locale]) === '';
+            case CustomQuestion::CUSTOM_QUESTION_TYPE_CHECKBOXES:
+                return !is_array($value) || count($value) === 0;
+            case CustomQuestion::CUSTOM_QUESTION_TYPE_RADIO_BUTTONS:
+            case CustomQuestion::CUSTOM_QUESTION_TYPE_DROP_DOWN_BOX:
+                return $value === null || $value === '' || $value === [];
+        }
+
+        return false;
+    }
+
+    private function getRequiredCustomQuestionError(CustomQuestion $customQuestion, string $locale): array
+    {
+        $error = [__('validator.required')];
+
+        if (
+            in_array(
+                $customQuestion->getQuestionType(),
+                [
+                    CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD,
+                    CustomQuestion::CUSTOM_QUESTION_TYPE_TEXT_FIELD,
+                    CustomQuestion::CUSTOM_QUESTION_TYPE_TEXTAREA,
+                ]
+            )
+        ) {
+            return [$locale => $error];
+        }
+
+        return $error;
     }
 }

@@ -9,76 +9,76 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2023-05-11T21:25:19+01:00\n"
 "PO-Revision-Date: 2023-05-11T21:25:19+01:00\n"
-"Language: Brazilian Portuguese\n"
+"Language: Spanish\n"
 
 msgid "plugins.generic.customQuestions.displayName"
-msgstr "Perguntas personalizadas"
+msgstr "Preguntas personalizadas"
 
 msgid "plugins.generic.customQuestions.description"
-msgstr "Um plugin para adicionar perguntas personalizadas ao fluxo de submissão"
+msgstr "Un plugin para agregar preguntas personalizadas al flujo de envío"
 
 msgid "plugins.generic.customQuestions.questions"
-msgstr "Perguntas"
+msgstr "Preguntas"
 
 msgid "plugins.generic.customQuestions.question"
-msgstr "Pergunta"
+msgstr "Pregunta"
 
 msgid "plugins.generic.customQuestions.create"
-msgstr "Criar Nova Pergunta"
+msgstr "Crear nueva pregunta"
 
 msgid "plugins.generic.customQuestions.changeType"
-msgstr "Alterando o tipo de item do formulário..."
+msgstr "Cambiando el tipo de elemento del formulario..."
 
 msgid "plugins.generic.customQuestions.title"
 msgstr "Título"
 
 msgid "plugins.generic.customQuestions.questionDescription"
-msgstr "Descrição"
+msgstr "Descripción"
 
 msgid "plugins.generic.customQuestions.required"
-msgstr "Preenchimento obrigatório"
+msgstr "Obligatorio"
 
 msgid "plugins.generic.customQuestions.questionType"
-msgstr "Tipo de pergunta"
+msgstr "Tipo de pregunta"
 
 msgid "plugins.generic.customQuestions.chooseType"
-msgstr "Escolher tipo de pergunta"
+msgstr "Elegir tipo de pregunta"
 
 msgid "plugins.generic.customQuestions.smalltextfield"
-msgstr "Caixa de texto de uma palavra"
+msgstr "Cuadro de texto de una palabra"
 
 msgid "plugins.generic.customQuestions.textfield"
-msgstr "Caixa de texto de uma linha"
+msgstr "Cuadro de texto de una línea"
 
 msgid "plugins.generic.customQuestions.textarea"
-msgstr "Caixa de texto estendida"
+msgstr "Cuadro de texto extendido"
 
 msgid "plugins.generic.customQuestions.checkboxes"
-msgstr "Checkboxes (permite escolher mais de uma opção)"
+msgstr "Casillas de verificación (puede elegir una o más)"
 
 msgid "plugins.generic.customQuestions.radiobuttons"
-msgstr "Botões rádio (permite escolher apenas uma opção)"
+msgstr "Botones de opción (solo puede elegir una)"
 
 msgid "plugins.generic.customQuestions.dropdownbox"
-msgstr "Menu dropdown"
+msgstr "Menú desplegable"
 
 msgid "plugins.generic.customQuestions.responseItems"
-msgstr "Opções de Resposta"
+msgstr "Opciones de respuesta"
 
 msgid "plugins.generic.customQuestions.possibleResponse"
-msgstr "Escolha"
+msgstr "Selección"
 
 msgid "plugins.generic.customQuestions.form.questionRequired"
-msgstr "O título da pergunta é obrigatório."
+msgstr "El título de la pregunta es obligatorio."
 
 msgid "plugins.generic.customQuestions.form.questionTypeRequired"
-msgstr "É necessário definir o tipo da pergunta."
+msgstr "Es necesario definir el tipo de pregunta."
 
 msgid "plugins.generic.customQuestions.confirmDelete"
-msgstr "Excluir esta pergunta também excluirá todas as respostas a ela. Tem certeza de que deseja fazer isso?"
+msgstr "Al eliminar esta pregunta también se eliminarán todas sus respuestas. ¿Está seguro/a de que desea hacerlo?"
 
 msgid "plugins.generic.customQuestions.submissionWizard.name"
-msgstr "Perguntas personalizadas"
+msgstr "Preguntas personalizadas"
 
 msgid "plugins.generic.customQuestions.submissionWizard.description"
-msgstr "Essa seção possui algumas perguntas personalizadas feitas pelos administradores do servidor de preprints"
+msgstr "Esta sección contiene algunas preguntas personalizadas creadas por los administradores del servidor de preprints"
