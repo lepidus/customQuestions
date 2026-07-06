@@ -30,86 +30,114 @@ class CustomQuestions extends FormComponent
 
     private function getCustomQuestionFieldComponent(CustomQuestion $customQuestion, int $submissionId): Field
     {
-        $possibleResponses = [];
-        if ($customQuestion->getLocalizedPossibleResponses()) {
-            foreach ($customQuestion->getLocalizedPossibleResponses() as $index => $responseItem) {
-                $possibleResponses[] = [
-                    'value' => $index,
-                    'label' => $responseItem,
-                ];
-            }
-        }
-
         $customQuestionResponse = Repo::customQuestionResponse()
             ->getByCustomQuestionId($customQuestion->getId(), $submissionId);
 
         $fieldName = 'customQuestion-' . $customQuestion->getId();
-        $fieldComponents = [
+        $responseValue = $customQuestionResponse ? $customQuestionResponse->getValue() : null;
+        $baseConfig = $this->getBaseFieldConfig($customQuestion);
+        $optionConfig = array_merge(
+            $baseConfig,
+            [
+                'options' => $this->getPossibleResponseOptions($customQuestion),
+                'value' => $responseValue ?? [],
+            ]
+        );
+
+        return match ($customQuestion->getQuestionType()) {
             CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD => new FieldText(
                 $fieldName,
-                [
-                    'label' => $customQuestion->getLocalizedTitle(),
-                    'description' => $customQuestion->getLocalizedDescription(),
-                    'isMultilingual' => true,
-                    'isRequired' => $customQuestion->getRequired(),
-                    'size' => 'small',
-                    'value' => $customQuestionResponse ? $customQuestionResponse->getValue() : null,
-                ]
+                array_merge(
+                    $baseConfig,
+                    [
+                        'isMultilingual' => true,
+                        'size' => 'small',
+                        'value' => $responseValue,
+                    ]
+                )
             ),
             CustomQuestion::CUSTOM_QUESTION_TYPE_TEXT_FIELD => new FieldText(
                 $fieldName,
-                [
-                    'label' => $customQuestion->getLocalizedTitle(),
-                    'description' => $customQuestion->getLocalizedDescription(),
-                    'isMultilingual' => true,
-                    'isRequired' => $customQuestion->getRequired(),
-                    'size' => 'large',
-                    'value' => $customQuestionResponse ? $customQuestionResponse->getValue() : null,
-                ]
+                array_merge(
+                    $baseConfig,
+                    [
+                        'isMultilingual' => true,
+                        'size' => 'large',
+                        'value' => $responseValue,
+                    ]
+                )
             ),
             CustomQuestion::CUSTOM_QUESTION_TYPE_TEXTAREA => new FieldRichTextarea(
                 $fieldName,
-                [
-                    'label' => $customQuestion->getLocalizedTitle(),
-                    'description' => $customQuestion->getLocalizedDescription(),
-                    'isMultilingual' => true,
-                    'isRequired' => $customQuestion->getRequired(),
-                    'value' => $customQuestionResponse ? $customQuestionResponse->getValue() : null,
-                ]
+                array_merge(
+                    $baseConfig,
+                    [
+                        'isMultilingual' => true,
+                        'value' => $responseValue,
+                    ]
+                )
             ),
             CustomQuestion::CUSTOM_QUESTION_TYPE_CHECKBOXES => new FieldOptions(
                 $fieldName,
-                [
-                    'label' => $customQuestion->getLocalizedTitle(),
-                    'description' => $customQuestion->getLocalizedDescription(),
-                    'isRequired' => $customQuestion->getRequired(),
-                    'options' => $possibleResponses,
-                    'value' => $customQuestionResponse ? $customQuestionResponse->getValue() : []
-                ]
+                $optionConfig
             ),
             CustomQuestion::CUSTOM_QUESTION_TYPE_RADIO_BUTTONS => new FieldOptions(
                 $fieldName,
-                [
-                    'label' => $customQuestion->getLocalizedTitle(),
-                    'description' => $customQuestion->getLocalizedDescription(),
-                    'type' => 'radio',
-                    'isRequired' => $customQuestion->getRequired(),
-                    'options' => $possibleResponses,
-                    'value' => $customQuestionResponse ? $customQuestionResponse->getValue() : []
-                ]
+                array_merge(
+                    $optionConfig,
+                    [
+                        'type' => 'radio',
+                    ]
+                )
             ),
             CustomQuestion::CUSTOM_QUESTION_TYPE_DROP_DOWN_BOX => new FieldSelect(
                 $fieldName,
-                [
-                    'label' => $customQuestion->getLocalizedTitle(),
-                    'description' => $customQuestion->getLocalizedDescription(),
-                    'isRequired' => $customQuestion->getRequired(),
-                    'options' => $possibleResponses,
-                    'value' => $customQuestionResponse ? $customQuestionResponse->getValue() : []
-                ]
+                $optionConfig
             ),
-        ];
+        };
+    }
 
-        return $fieldComponents[$customQuestion->getQuestionType()];
+    private function getBaseFieldConfig(CustomQuestion $customQuestion): array
+    {
+        return [
+            'label' => $customQuestion->getLocalizedTitle(),
+            'description' => $this->removeDescriptionWrapperParagraph($customQuestion->getLocalizedDescription()),
+            'isRequired' => $customQuestion->getRequired(),
+        ];
+    }
+
+    private function getPossibleResponseOptions(CustomQuestion $customQuestion): array
+    {
+        $possibleResponses = [];
+        if (!$customQuestion->getLocalizedPossibleResponses()) {
+            return $possibleResponses;
+        }
+
+        foreach ($customQuestion->getLocalizedPossibleResponses() as $index => $responseItem) {
+            $possibleResponses[] = [
+                'value' => $index,
+                'label' => $responseItem,
+            ];
+        }
+
+        return $possibleResponses;
+    }
+
+    private function removeDescriptionWrapperParagraph($description)
+    {
+        if (!is_string($description)) {
+            return $description;
+        }
+
+        $trimmedDescription = trim($description);
+        if (!preg_match('/^<p\b[^>]*>(.*)<\/p>$/is', $trimmedDescription, $matches)) {
+            return $description;
+        }
+
+        if (preg_match('/<\/p>\s*<p\b/is', $matches[1])) {
+            return $description;
+        }
+
+        return trim($matches[1]);
     }
 }
