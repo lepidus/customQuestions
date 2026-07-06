@@ -44,12 +44,13 @@ class CustomQuestions extends FormComponent
             ->getByCustomQuestionId($customQuestion->getId(), $submissionId);
 
         $fieldName = 'customQuestion-' . $customQuestion->getId();
+        $fieldDescription = $this->removeWrapperParagraph($customQuestion->getLocalizedDescription());
         $fieldComponents = [
             CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD => new FieldText(
                 $fieldName,
                 [
                     'label' => $customQuestion->getLocalizedTitle(),
-                    'description' => $customQuestion->getLocalizedDescription(),
+                    'description' => $fieldDescription,
                     'isMultilingual' => true,
                     'isRequired' => $customQuestion->getRequired(),
                     'size' => 'small',
@@ -60,7 +61,7 @@ class CustomQuestions extends FormComponent
                 $fieldName,
                 [
                     'label' => $customQuestion->getLocalizedTitle(),
-                    'description' => $customQuestion->getLocalizedDescription(),
+                    'description' => $fieldDescription,
                     'isMultilingual' => true,
                     'isRequired' => $customQuestion->getRequired(),
                     'size' => 'large',
@@ -71,7 +72,7 @@ class CustomQuestions extends FormComponent
                 $fieldName,
                 [
                     'label' => $customQuestion->getLocalizedTitle(),
-                    'description' => $customQuestion->getLocalizedDescription(),
+                    'description' => $fieldDescription,
                     'isMultilingual' => true,
                     'isRequired' => $customQuestion->getRequired(),
                     'value' => $customQuestionResponse ? $customQuestionResponse->getValue() : null,
@@ -81,7 +82,7 @@ class CustomQuestions extends FormComponent
                 $fieldName,
                 [
                     'label' => $customQuestion->getLocalizedTitle(),
-                    'description' => $customQuestion->getLocalizedDescription(),
+                    'description' => $fieldDescription,
                     'isRequired' => $customQuestion->getRequired(),
                     'options' => $possibleResponses,
                     'value' => $customQuestionResponse ? $customQuestionResponse->getValue() : []
@@ -91,7 +92,7 @@ class CustomQuestions extends FormComponent
                 $fieldName,
                 [
                     'label' => $customQuestion->getLocalizedTitle(),
-                    'description' => $customQuestion->getLocalizedDescription(),
+                    'description' => $fieldDescription,
                     'type' => 'radio',
                     'isRequired' => $customQuestion->getRequired(),
                     'options' => $possibleResponses,
@@ -102,7 +103,7 @@ class CustomQuestions extends FormComponent
                 $fieldName,
                 [
                     'label' => $customQuestion->getLocalizedTitle(),
-                    'description' => $customQuestion->getLocalizedDescription(),
+                    'description' => $fieldDescription,
                     'isRequired' => $customQuestion->getRequired(),
                     'options' => $possibleResponses,
                     'value' => $customQuestionResponse ? $customQuestionResponse->getValue() : []
@@ -111,5 +112,23 @@ class CustomQuestions extends FormComponent
         ];
 
         return $fieldComponents[$customQuestion->getQuestionType()];
+    }
+
+    private function removeWrapperParagraph($description)
+    {
+        if (!is_string($description)) {
+            return $description;
+        }
+
+        $trimmedDescription = trim($description);
+        if (!preg_match('/^<p\b[^>]*>(.*)<\/p>$/is', $trimmedDescription, $matches)) {
+            return $description;
+        }
+
+        if (preg_match('/<\/p>\s*<p\b/is', $matches[1])) {
+            return $description;
+        }
+
+        return trim($matches[1]);
     }
 }
