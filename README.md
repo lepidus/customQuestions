@@ -6,7 +6,7 @@ A plugin to add custom questions to submission wizard
 
 The latest release of this plugin is compatible with the following PKP applications:
 
-* OJS and OPS 3.4.0
+* OJS 3.5.0
 
 ## Installation
 

@@ -342,8 +342,9 @@ describe('Custom Quetions plugin tests', function () {
 
 	it('Checks custom questions in publication workflow', function () {
 		cy.findSubmissionAsEditor('dbarnes', null, 'Corino');
-		cy.get('#publication-button').click();
-		cy.get('#customQuestions-button').click();
+		cy.get('[data-cy="active-modal"]')
+			.contains('button', 'Custom Questions')
+			.click();
 
 		customQuestions.forEach((customQuestion) => {
 			let customQuestionId = 'customQuestion-' + customQuestion.id;

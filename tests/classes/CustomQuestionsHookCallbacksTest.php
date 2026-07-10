@@ -3,6 +3,7 @@
 namespace APP\plugins\generic\customQuestions\tests\classes;
 
 use APP\core\Application;
+use APP\plugins\generic\customQuestions\classes\components\forms\CustomQuestionsFormProvider;
 use APP\plugins\generic\customQuestions\classes\customQuestion\CustomQuestion;
 use APP\plugins\generic\customQuestions\classes\CustomQuestionsHookCallbacks;
 use APP\plugins\generic\customQuestions\CustomQuestionsPlugin;
@@ -23,7 +24,7 @@ class CustomQuestionsHookCallbacksTest extends CustomQuestionsTestCase
             [&$errors, $submission, $context]
         );
 
-        $locale = $submission->getLocale() ?: $context->getData('primaryLocale');
+        $locale = $submission->getData('locale') ?: $context->getData('primaryLocale');
 
         self::assertSame(
             [$locale => [__('validator.required')]],
@@ -46,6 +47,46 @@ class CustomQuestionsHookCallbacksTest extends CustomQuestionsTestCase
         );
 
         self::assertArrayNotHasKey('customQuestion-' . $customQuestion->getId(), $errors);
+    }
+
+    public function testPostSubmissionFormConfigContainsSavedResponses(): void
+    {
+        $customQuestion = $this->createRequiredCustomQuestion();
+        $this->createCustomQuestionResponse($customQuestion, ['en' => 'Saved response']);
+        $submission = \APP\facades\Repo::submission()->get($this->submissionId);
+        $context = Application::getContextDAO()->getById($this->contextId);
+
+        $config = (new CustomQuestionsFormProvider())->getConfig(
+            Application::get()->getRequest(),
+            $submission,
+            $context
+        );
+
+        self::assertNotNull($config);
+        self::assertSame('customQuestions', $config['id']);
+        self::assertSame('PUT', $config['method']);
+        self::assertSame('en', $config['primaryLocale']);
+        self::assertSame(['en' => 'Saved response'], $config['fields'][0]['value']);
+        self::assertStringEndsWith(
+            '/testContext/api/v1/customQuestionResponses/' . $submission->getId(),
+            $config['action']
+        );
+    }
+
+    public function testOjs35WorkflowExtensionRegistersMenuAndForm(): void
+    {
+        $script = file_get_contents(dirname(__DIR__, 2) . '/js/CustomQuestionsWorkflow.js');
+
+        self::assertStringContainsString(
+            "storeExtendFn('workflow', 'getMenuItems'",
+            $script
+        );
+        self::assertStringContainsString(
+            "storeExtendFn('workflow', 'getPrimaryItems'",
+            $script
+        );
+        self::assertStringContainsString('publication_customQuestions', $script);
+        self::assertStringContainsString('CustomQuestionsWorkflowForm', $script);
     }
 
     private function createRequiredCustomQuestion(

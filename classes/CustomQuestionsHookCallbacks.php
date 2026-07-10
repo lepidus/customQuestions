@@ -49,7 +49,7 @@ class CustomQuestionsHookCallbacks
         }
 
         $customQuestions = Repo::customQuestion()->getCollector()
-            ->filterByContextIds([$submission->getContextId()])
+            ->filterByContextIds([$submission->getData('contextId')])
             ->getMany()
             ->remember();
 
@@ -68,7 +68,12 @@ class CustomQuestionsHookCallbacks
         );
 
         $this->removeButtonFromForm($customQuestionsForm);
-        $formConfig = $this->getLocalizedForm($customQuestionsForm, $submission, $formLocales);
+        $formConfig = $this->getLocalizedForm(
+            $customQuestionsForm,
+            $submission,
+            $formLocales,
+            $request->getContext()
+        );
 
         $steps = $templateMgr->getState('steps');
         $steps = array_map(function ($step) use ($formConfig) {
@@ -131,53 +136,67 @@ class CustomQuestionsHookCallbacks
         }
     }
 
-    private function getLocalizedForm(FormComponent $form, Submission $submission, array $supportedFormLocales): array
-    {
+    private function getLocalizedForm(
+        FormComponent $form,
+        Submission $submission,
+        array $supportedFormLocales,
+        Context $context
+    ): array {
         $config = $form->getConfig();
+        $locale = $submission->getData('locale') ?: $context->getData('primaryLocale');
 
-        $config['primaryLocale'] = $submission->getLocale();
-        $config['visibleLocales'] = [$submission->getLocale()];
+        $config['primaryLocale'] = $locale;
+        $config['visibleLocales'] = [$locale];
 
-        usort($supportedFormLocales, fn ($a, $b) => $a['key'] === $submission->getLocale() ? -1 : 1);
+        usort($supportedFormLocales, fn ($a, $b) => $a['key'] === $locale ? -1 : 1);
 
         $config['supportedFormLocales'] = $supportedFormLocales;
 
         return $config;
     }
 
-    public function addToPublicationForms(string $hookName, array $params): bool
+    public function addToDashboard(string $hookName, array $params): bool
     {
         $templateMgr = $params[0];
         $template = $params[1];
 
-        if (!in_array($template, ['workflow/workflow.tpl', 'authorDashboard/authorDashboard.tpl'])) {
+        if ($template !== 'dashboard/editors.tpl') {
             return false;
         }
 
         $request = Application::get()->getRequest();
-        $submission = $templateMgr->getTemplateVars('submission');
-
         $customQuestions = Repo::customQuestion()->getCollector()
-            ->filterByContextIds([$submission->getContextId()])
+            ->filterByContextIds([$request->getContext()->getId()])
             ->getMany()
             ->remember();
 
-        $apiUrl = $this->getCustomQuestionResponseApiUrl($request, $submission);
-        $formLocales = $this->getFormLocales($request->getContext());
+        if ($customQuestions->isEmpty()) {
+            return false;
+        }
 
-        $customQuestionsForm = $this->getCustomQuestionsForm(
-            $apiUrl,
-            $formLocales,
-            $customQuestions,
-            $submission->getId()
-        );
-
-        $components = $templateMgr->getState('components');
-        $components[$customQuestionsForm->id] = $customQuestionsForm->getConfig();
+        $pageInitConfig = $templateMgr->getState('pageInitConfig');
+        $pageInitConfig['customQuestionsApiUrl'] = $request
+            ->getDispatcher()
+            ->url(
+                $request,
+                Application::ROUTE_API,
+                $request->getContext()->getPath(),
+                'customQuestionResponses/__submissionId__'
+            );
+        $pageInitConfig['customQuestionsLabel'] = __('plugins.generic.customQuestions.displayName');
 
         $templateMgr->setState([
-            'components' => $components,
+            'pageInitConfig' => $pageInitConfig,
         ]);
+
+        $templateMgr->addJavaScript(
+            'custom-questions-workflow',
+            $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/js/CustomQuestionsWorkflow.js',
+            [
+                'contexts' => 'backend',
+                'priority' => TemplateManager::STYLE_SEQUENCE_LATE,
+            ]
+        );
 
         return false;
     }
@@ -236,26 +255,12 @@ class CustomQuestionsHookCallbacks
         return false;
     }
 
-    public function addCustomQuestionsTab(string $hookName, array $params): bool
-    {
-        $smarty = &$params[1];
-        $output = &$params[2];
-
-        $output .= sprintf(
-            '<tab id="customQuestions" label="%s">%s</tab>',
-            __('plugins.generic.customQuestions.displayName'),
-            '<pkp-form v-bind="components.customQuestions" @set="set"></pkp-form>'
-        );
-
-        return false;
-    }
-
     public function validateRequiredCustomQuestionResponses(string $hookName, array $params): bool
     {
         $errors = &$params[0];
         $submission = $params[1];
         $context = $params[2];
-        $locale = $submission->getLocale() ?: $context->getData('primaryLocale');
+        $locale = $submission->getData('locale') ?: $context->getData('primaryLocale');
 
         $customQuestions = Repo::customQuestion()->getCollector()
             ->filterByContextIds([$context->getId()])

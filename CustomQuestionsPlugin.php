@@ -9,6 +9,7 @@ use APP\plugins\generic\customQuestions\controllers\grid\CustomQuestionGridHandl
 use APP\plugins\generic\customQuestions\controllers\listbuilder\CustomQuestionResponseItemListbuilderHandler;
 use APP\template\TemplateManager;
 use Illuminate\Database\Migrations\Migration;
+use PKP\core\APIRouter;
 use PKP\core\JSONMessage;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
@@ -24,13 +25,12 @@ class CustomQuestionsPlugin extends GenericPlugin
         if ($success && $this->getEnabled()) {
             $hookCallbacks = new CustomQuestionsHookCallbacks($this);
             Hook::add('TemplateManager::display', [$hookCallbacks, 'addToDetailsStep']);
-            Hook::add('TemplateManager::display', [$hookCallbacks, 'addToPublicationForms']);
+            Hook::add('TemplateManager::display', [$hookCallbacks, 'addToDashboard']);
             Hook::add('Template::SubmissionWizard::Section::Review', [$hookCallbacks, 'addToReviewStep']);
-            Hook::add('Template::Workflow::Publication', [$hookCallbacks, 'addCustomQuestionsTab']);
             Hook::add('Submission::validateSubmit', [$hookCallbacks, 'validateRequiredCustomQuestionResponses']);
 
             Hook::add('LoadComponentHandler', [$this, 'setupGridHandler']);
-            Hook::add('Dispatcher::dispatch', [$this, 'setupAPIHandler']);
+            Hook::add('APIHandler::endpoints::plugin', [$this, 'setupAPIHandler']);
             Hook::add('Schema::get::customQuestion', [$this, 'addCustomQuestionSchema']);
             Hook::add('Schema::get::customQuestionResponse', [$this, 'addCustomQuestionResponseSchema']);
         }
@@ -104,26 +104,17 @@ class CustomQuestionsPlugin extends GenericPlugin
         return false;
     }
 
-    public function setupAPIHandler(string $hookName, array $args): void
+    public function setupAPIHandler(string $hookName, array $args): bool
     {
-        $request = $args[0];
-        $router = $request->getRouter();
+        $router = $args[0];
 
-        if (!($router instanceof \PKP\core\APIRouter)) {
-            return;
+        if ($router instanceof APIRouter) {
+            $router->registerPluginApiControllers([
+                new CustomQuestionResponseHandler()
+            ]);
         }
 
-        if (str_contains($request->getRequestPath(), 'api/v1/customQuestionResponses')) {
-            $handler = new CustomQuestionResponseHandler();
-        }
-
-        if (!isset($handler)) {
-            return;
-        }
-
-        $router->setHandler($handler);
-        $handler->getApp()->run();
-        exit;
+        return false;
     }
 
     public function getActions($request, $actionArgs): array
