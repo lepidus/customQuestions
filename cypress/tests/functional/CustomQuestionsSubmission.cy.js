@@ -34,6 +34,7 @@ describe('Custom Questions submission wizard', function () {
 		cy.contains('button', 'Begin Submission').click();
 
 		cy.contains('Make a Submission: Details').should('be.visible');
+		cy.url().as('detailsUrl', {type: 'static'});
 		cy.setTinyMceContent(
 			'titleAbstract-abstract-control-en',
 			'Checking required custom questions in submission wizard.'
@@ -53,14 +54,20 @@ describe('Custom Questions submission wizard', function () {
 		cy.get(`input[name^="customQuestion-${questions.largeText.id}"]`)
 			.closest('.pkpFormField--sizelarge').should('exist');
 		cy.get(`textarea[id^="customQuestions-customQuestion-${questions.textarea.id}"]`).should('exist');
-		cy.get(`input[name^="customQuestion-${questions.checkboxes.id}"]`)
-			.should('have.attr', 'type', 'checkbox');
+		const checkboxSelector = `input[name^="customQuestion-${questions.checkboxes.id}"]`;
+		cy.get(checkboxSelector).should('have.length', 3);
+		cy.get(checkboxSelector).should('have.attr', 'type', 'checkbox');
 		cy.get(`input[name^="customQuestion-${questions.radio.id}"]`)
 			.should('have.attr', 'type', 'radio');
 		cy.get(`select[id^="customQuestions-customQuestion-${questions.select.id}"] option`)
 			.should('have.length.at.least', 3);
 
+		const partialResponse = 'Partially completed custom questions.';
+		cy.intercept('POST', '**/customQuestionResponses/*').as('savePartialResponses');
+		cy.get(`input[name^="customQuestion-${questions.smallText.id}"][id*="-control-en"]`)
+			.type(partialResponse);
 		cy.contains('.submissionWizard__footer button', 'Continue').click();
+		cy.wait('@savePartialResponses').its('response.statusCode').should('eq', 200);
 		cy.contains('Make a Submission: Upload Files').should('be.visible');
 		const files = [{
 			file: 'dummy.pdf',
@@ -81,16 +88,38 @@ describe('Custom Questions submission wizard', function () {
 		Object.values(questions).forEach((question) => {
 			cy.contains('.submissionWizard__reviewPanel__item h4', question.title)
 				.closest('.submissionWizard__reviewPanel__item')
-				.contains('This field is required.');
+				.within(() => {
+					if (question.id === questions.smallText.id) {
+						cy.contains(partialResponse);
+						return;
+					}
+					cy.contains('.pkpNotification', 'This field is required.')
+						.should('not.have.class', 'submissionWizard__reviewEmptyWarning')
+						.find('span')
+						.should('have.class', 'h-5')
+						.and('have.class', 'w-5');
+					cy.get('.pkpNotification')
+						.next('.submissionWizard__reviewPanel__item__header')
+						.should('exist');
+				});
 		});
 		cy.contains('button', 'Submit').should('be.disabled');
 
-		cy.contains('.submissionWizard__reviewPanel h3', 'Custom questions')
-			.closest('.submissionWizard__reviewPanel')
-			.find('.submissionWizard__reviewPanel__edit')
-			.contains('Edit').click();
+		cy.get('@detailsUrl').then((detailsUrl) => cy.visit(detailsUrl));
+		cy.contains('Make a Submission: Details').should('be.visible');
+		cy.get(checkboxSelector).eq(0)
+			.closest('.pkpFormField--options__option')
+			.contains(questions.checkboxes.possibleResponses[0])
+			.click();
+		cy.get(checkboxSelector).eq(0).should('be.checked');
+		cy.get(checkboxSelector).eq(1).should('not.be.checked');
+		cy.get(checkboxSelector).eq(2).should('not.be.checked');
+		cy.get(checkboxSelector).eq(0).uncheck();
 		cy.intercept('POST', '**/customQuestionResponses/*').as('saveResponses');
 		answerCustomQuestions(questions);
+		cy.get(checkboxSelector).eq(0).should('be.checked');
+		cy.get(checkboxSelector).eq(1).should('not.be.checked');
+		cy.get(checkboxSelector).eq(2).should('be.checked');
 		cy.contains('.submissionWizard__footer button', 'Continue').click();
 		cy.wait('@saveResponses').its('response.statusCode').should('eq', 200);
 		for (let step = 0; step < 3; step++) {

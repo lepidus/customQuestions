@@ -29,6 +29,8 @@ class CustomQuestionResponseValidatorTest extends TestCase
             'localized text' => [1, ['en' => 'Response'], ['en' => 'Response']],
             'empty localized text' => [1, ['en' => 'Response', 'fr_CA' => null], ['en' => 'Response', 'fr_CA' => '']],
             'empty draft text' => [2, [], []],
+            'empty draft checkboxes from form' => [4, '', []],
+            'empty draft checkboxes from request middleware' => [4, null, []],
             'checkbox indexes' => [4, ['0', 2], [0, 2]],
             'radio zero' => [5, '0', 0],
             'empty draft select' => [6, '', ''],

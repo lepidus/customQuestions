@@ -54,6 +54,9 @@ class CustomQuestionResponseValidator
 
     private function normalizeCheckboxes(CustomQuestion $customQuestion, mixed $value): array
     {
+        if ($value === null || $value === '') {
+            return [];
+        }
         if (!is_array($value)) {
             throw new UnexpectedValueException('Checkbox responses must be a list.');
         }

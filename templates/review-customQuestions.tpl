@@ -16,9 +16,6 @@
             v-for="customQuestion in customQuestions"
             class="submissionWizard__reviewPanel__item"
         >
-            <h4 class="submissionWizard__reviewPanel__item__header">
-                {{ localize(customQuestion.title) }}
-            </h4>
             <template v-for="fieldName in ['customQuestion-' + customQuestion.id]">
                 <template v-if="errors[fieldName]">
                     <template v-if="Array.isArray(errors[fieldName])">
@@ -26,9 +23,8 @@
                             v-for="(error, i) in errors[fieldName]"
                             :key="fieldName + '-' + i"
                             type="warning"
-                            class="submissionWizard__reviewEmptyWarning"
                         >
-                            <icon icon="exclamation-triangle" :inline="true"></icon>
+                            <icon icon="Error" class="h-5 w-5"></icon>
                             {{ error }}
                         </notification>
                     </template>
@@ -37,14 +33,16 @@
                             v-for="(error, i) in localizedErrors"
                             :key="fieldName + '-' + localeKey + '-' + i"
                             type="warning"
-                            class="submissionWizard__reviewEmptyWarning"
                         >
-                            <icon icon="exclamation-triangle" :inline="true"></icon>
+                            <icon icon="Error" class="h-5 w-5"></icon>
                             {{ error }}
                         </notification>
                     </template>
                 </template>
             </template>
+            <h4 class="submissionWizard__reviewPanel__item__header">
+                {{ localize(customQuestion.title) }}
+            </h4>
                 <template
                     v-for="response in [customQuestionResponses.find(
                         item => item.customQuestionId == customQuestion.id
