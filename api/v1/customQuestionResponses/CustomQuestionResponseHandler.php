@@ -4,16 +4,19 @@ namespace APP\plugins\generic\customQuestions\api\v1\customQuestionResponses;
 
 use APP\core\Application;
 use APP\plugins\generic\customQuestions\classes\components\forms\CustomQuestionsFormProvider;
+use APP\plugins\generic\customQuestions\classes\customQuestionResponse\CustomQuestionResponseValidator;
 use APP\plugins\generic\customQuestions\classes\facades\Repo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use PKP\core\PKPBaseController;
 use PKP\core\PKPRequest;
 use PKP\security\authorization\ContextAccessPolicy;
 use PKP\security\authorization\SubmissionAccessPolicy;
 use PKP\security\Role;
+use UnexpectedValueException;
 
 class CustomQuestionResponseHandler extends PKPBaseController
 {
@@ -77,32 +80,51 @@ class CustomQuestionResponseHandler extends PKPBaseController
         $context = $request->getContext();
         $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
         $submissionId = $submission->getId();
+        $validator = new CustomQuestionResponseValidator();
+        $validatedResponses = [];
 
-        foreach ($illuminateRequest->input() as $fieldName => $value) {
-            $fieldNameParts = explode('-', $fieldName);
-            $customQuestionId = (int) array_pop($fieldNameParts);
-
+        foreach ($illuminateRequest->all() as $fieldName => $value) {
+            $customQuestionId = $validator->getQuestionId($fieldName);
+            if ($customQuestionId === null) {
+                return $this->invalidPayloadResponse();
+            }
             $customQuestion = Repo::customQuestion()->get($customQuestionId, $context->getId());
             if (is_null($customQuestion)) {
-                continue;
+                return $this->invalidPayloadResponse();
             }
-
-            $customQuestionResponse = Repo::customQuestionResponse()
-                ->getByCustomQuestionId($customQuestionId, $submissionId);
-
-            if (is_null($customQuestionResponse)) {
-                $customQuestionResponse = Repo::customQuestionResponse()->newDataObject([
-                    'submissionId' => $submissionId,
-                    'customQuestionId' => $customQuestionId,
-                ]);
-                Repo::customQuestionResponse()->add($customQuestionResponse);
+            try {
+                $value = $validator->normalize($customQuestion, $value);
+            } catch (UnexpectedValueException) {
+                return $this->invalidPayloadResponse();
             }
-
-            Repo::customQuestionResponse()->edit($customQuestionResponse, [
-                'value' => $value,
-                'responseType' => $customQuestion->getCustomQuestionResponseType(),
-            ]);
+            $validatedResponses[] = [$customQuestion, $value];
         }
+
+        DB::transaction(function () use ($validatedResponses, $submissionId) {
+            foreach ($validatedResponses as [$customQuestion, $value]) {
+                $customQuestionId = $customQuestion->getId();
+                $customQuestionResponse = Repo::customQuestionResponse()
+                    ->getByCustomQuestionId($customQuestionId, $submissionId);
+
+                $responseData = [
+                    'value' => $value,
+                    'responseType' => $customQuestion->getCustomQuestionResponseType(),
+                ];
+                if (is_null($customQuestionResponse)) {
+                    $customQuestionResponse = Repo::customQuestionResponse()->newDataObject(array_merge(
+                        $responseData,
+                        [
+                            'submissionId' => $submissionId,
+                            'customQuestionId' => $customQuestionId,
+                        ]
+                    ));
+                    Repo::customQuestionResponse()->add($customQuestionResponse);
+                    continue;
+                }
+
+                Repo::customQuestionResponse()->edit($customQuestionResponse, $responseData);
+            }
+        });
 
         $customQuestionResponses = Repo::customQuestionResponse()->getCollector()
             ->filterBySubmissionIds([$submissionId])
@@ -114,5 +136,13 @@ class CustomQuestionResponseHandler extends PKPBaseController
         }
 
         return response()->json($customQuestionResponsesProps, Response::HTTP_OK);
+    }
+
+    private function invalidPayloadResponse(): JsonResponse
+    {
+        return response()->json(
+            ['error' => __('plugins.generic.customQuestions.api.invalidPayload')],
+            Response::HTTP_UNPROCESSABLE_ENTITY
+        );
     }
 }

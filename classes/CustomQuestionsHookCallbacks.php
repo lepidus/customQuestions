@@ -174,8 +174,7 @@ class CustomQuestionsHookCallbacks
             return false;
         }
 
-        $pageInitConfig = $templateMgr->getState('pageInitConfig');
-        $pageInitConfig['customQuestionsApiUrl'] = $request
+        $customQuestionsApiUrl = $request
             ->getDispatcher()
             ->url(
                 $request,
@@ -183,11 +182,20 @@ class CustomQuestionsHookCallbacks
                 $request->getContext()->getPath(),
                 'customQuestionResponses/__submissionId__'
             );
-        $pageInitConfig['customQuestionsLabel'] = __('plugins.generic.customQuestions.displayName');
+        $workflowConfig = json_encode([
+            'apiUrl' => $customQuestionsApiUrl,
+            'label' => __('plugins.generic.customQuestions.displayName'),
+        ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR);
 
-        $templateMgr->setState([
-            'pageInitConfig' => $pageInitConfig,
-        ]);
+        $templateMgr->addJavaScript(
+            'custom-questions-workflow-config',
+            'window.pkp.customQuestions = ' . $workflowConfig . ';',
+            [
+                'contexts' => 'backend',
+                'inline' => true,
+                'priority' => TemplateManager::STYLE_SEQUENCE_LATE,
+            ]
+        );
 
         $templateMgr->addJavaScript(
             'custom-questions-workflow',

@@ -45,18 +45,22 @@
                     </template>
                 </template>
             </template>
-                <div
-                    v-if="!customQuestionResponses.find(response => response.customQuestionId == customQuestion.id)?.value"
-                    class="submissionWizard__reviewPanel__item__value"
-                >
-                    {translate key="common.noneProvided"}
-                </div>
-                <template v-else
-                    v-for="response in customQuestionResponses"
-                    v-if="response.customQuestionId == customQuestion.id"
+                <template
+                    v-for="response in [customQuestionResponses.find(
+                        item => item.customQuestionId == customQuestion.id
+                    )]"
                 >
                     <div
-                        v-if="response.responseType === 'string'"
+                        v-if="!response
+                            || response.value === null
+                            || response.value === ''
+                            || (Array.isArray(response.value) && !response.value.length)"
+                        class="submissionWizard__reviewPanel__item__value"
+                    >
+                        {translate key="common.noneProvided"}
+                    </div>
+                    <div
+                        v-else-if="response.responseType === 'string'"
                         class="submissionWizard__reviewPanel__item__value"
                         v-html="localize(response.value)
                             ? localize(response.value)
@@ -66,8 +70,9 @@
                         <template v-if="response.responseType === 'array'">
                             {{
                                 localize(customQuestion.possibleResponses)
-                                .filter((possibleResponse, id) => response.value.includes(id.toString()))
-                                .join(__('common.commaListSeparator'))
+                                .filter((possibleResponse, id) => response.value.includes(id)
+                                    || response.value.includes(id.toString()))
+                                .join('{translate key="common.commaListSeparator"}')
                             }}
                         </template>
                         <template v-else-if="response.responseType === 'int'">

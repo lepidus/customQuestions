@@ -17,6 +17,9 @@ msgstr "Preguntas personalizadas"
 msgid "plugins.generic.customQuestions.description"
 msgstr "Un plugin para agregar preguntas personalizadas al flujo de envío"
 
+msgid "plugins.generic.customQuestions.api.invalidPayload"
+msgstr "La carga de respuestas de preguntas personalizadas no es válida."
+
 msgid "plugins.generic.customQuestions.questions"
 msgstr "Preguntas"
 

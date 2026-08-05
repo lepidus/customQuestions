@@ -17,6 +17,9 @@ msgstr "Custom Questions"
 msgid "plugins.generic.customQuestions.description"
 msgstr "A plugin to add custom questions to submission wizard"
 
+msgid "plugins.generic.customQuestions.api.invalidPayload"
+msgstr "The custom question response payload is invalid."
+
 msgid "plugins.generic.customQuestions.questions"
 msgstr "Questions"
 

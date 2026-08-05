@@ -59,6 +59,7 @@ class RepositoryTest extends CustomQuestionsTestCase
 
         $fetchedCustomQuestion = $repository->get($insertedCustomQuestionId, $this->contextId);
         self::assertEquals($params, $fetchedCustomQuestion->_data);
+        self::assertNull($repository->get($insertedCustomQuestionId, $this->contextId + 1));
 
         $params['title']['en'] = 'Updated title';
         $params['description']['en'] = 'Updated description';

@@ -1,0 +1,56 @@
+{
+  "questions": {
+    "smallText": {
+      "title": "Small text custom question",
+      "description": "A custom question with a small text field.",
+      "required": true,
+      "type": 1,
+      "possibleResponses": [],
+      "response": "Small text response"
+    },
+    "largeText": {
+      "title": "Large text custom question",
+      "description": "",
+      "required": true,
+      "type": 2,
+      "possibleResponses": [],
+      "response": "Large text response"
+    },
+    "textarea": {
+      "title": "Text area custom question",
+      "description": "A custom question with a text area field.",
+      "required": true,
+      "type": 3,
+      "possibleResponses": [],
+      "response": "Text area response"
+    },
+    "checkboxes": {
+      "title": "Checkbox custom question",
+      "description": "",
+      "required": true,
+      "type": 4,
+      "possibleResponses": ["option 1", "option 2", "option 3"],
+      "response": [0, 2]
+    },
+    "radio": {
+      "title": "Radio input custom question",
+      "description": "A custom question with a radio input field.",
+      "required": true,
+      "type": 5,
+      "possibleResponses": ["option 1", "option 2", "option 3"],
+      "response": 1
+    },
+    "select": {
+      "title": "Select custom question",
+      "description": "",
+      "required": true,
+      "type": 6,
+      "possibleResponses": ["option 1", "option 2", "option 3"],
+      "response": 2
+    }
+  },
+  "workflowSubmissionTitle": {
+    "ojs": "The influence of lactation on the quantity and quality of cashmere production",
+    "ops": "The influence of lactation on the quantity and quality of cashmere production"
+  }
+}

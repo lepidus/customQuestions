@@ -73,20 +73,19 @@ class CustomQuestionsHookCallbacksTest extends CustomQuestionsTestCase
         );
     }
 
-    public function testOjs35WorkflowExtensionRegistersMenuAndForm(): void
+    public function testPostSubmissionFormConfigRejectsSubmissionFromAnotherContext(): void
     {
-        $script = file_get_contents(dirname(__DIR__, 2) . '/js/CustomQuestionsWorkflow.js');
+        $submission = \APP\facades\Repo::submission()->get($this->submissionId);
+        $context = clone Application::getContextDAO()->getById($this->contextId);
+        $context->setId($this->contextId + 1);
 
-        self::assertStringContainsString(
-            "storeExtendFn('workflow', 'getMenuItems'",
-            $script
+        $config = (new CustomQuestionsFormProvider())->getConfig(
+            Application::get()->getRequest(),
+            $submission,
+            $context
         );
-        self::assertStringContainsString(
-            "storeExtendFn('workflow', 'getPrimaryItems'",
-            $script
-        );
-        self::assertStringContainsString('publication_customQuestions', $script);
-        self::assertStringContainsString('CustomQuestionsWorkflowForm', $script);
+
+        self::assertNull($config);
     }
 
     private function createRequiredCustomQuestion(

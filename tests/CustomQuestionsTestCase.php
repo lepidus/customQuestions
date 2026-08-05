@@ -2,10 +2,9 @@
 
 namespace APP\plugins\generic\customQuestions\tests;
 
-use APP\plugins\generic\customQuestions\CustomQuestionsSchemaMigration;
 use APP\plugins\generic\customQuestions\classes\facades\Repo;
+use APP\plugins\generic\customQuestions\CustomQuestionsSchemaMigration;
 use Illuminate\Support\Facades\Schema;
-use PKP\db\DAORegistry;
 use PKP\plugins\Hook;
 use PKP\tests\DatabaseTestCase;
 

@@ -20,9 +20,9 @@ class CustomQuestionsPlugin extends GenericPlugin
 {
     public function register($category, $path, $mainContextId = null): bool
     {
-        $success = parent::register($category, $path);
+        $success = parent::register($category, $path, $mainContextId);
 
-        if ($success && $this->getEnabled()) {
+        if ($success && $this->getEnabled($mainContextId)) {
             $hookCallbacks = new CustomQuestionsHookCallbacks($this);
             Hook::add('TemplateManager::display', [$hookCallbacks, 'addToDetailsStep']);
             Hook::add('TemplateManager::display', [$hookCallbacks, 'addToDashboard']);
@@ -104,15 +104,11 @@ class CustomQuestionsPlugin extends GenericPlugin
         return false;
     }
 
-    public function setupAPIHandler(string $hookName, array $args): bool
+    public function setupAPIHandler(string $hookName, APIRouter $router): bool
     {
-        $router = $args[0];
-
-        if ($router instanceof APIRouter) {
-            $router->registerPluginApiControllers([
-                new CustomQuestionResponseHandler()
-            ]);
-        }
+        $router->registerPluginApiControllers([
+            new CustomQuestionResponseHandler()
+        ]);
 
         return false;
     }

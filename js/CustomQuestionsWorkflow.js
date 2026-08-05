@@ -42,44 +42,74 @@
         },
     });
 
-    pkp.registry.storeExtendFn('workflow', 'getMenuItems', function (items, args) {
-        var publicationMenu = items.find(function (item) {
-            return item.key === 'publication';
-        });
-
-        if (!publicationMenu || !args.submission) {
-            return items;
+    function installWorkflowExtensions(store) {
+        if (!store || store.customQuestionsExtensionsInstalled) {
+            return false;
         }
+        store.customQuestionsExtensionsInstalled = true;
+        var config = pkp.customQuestions;
+        store.Components.CustomQuestionsWorkflowForm = pkp.registry.getComponent(
+            'CustomQuestionsWorkflowForm'
+        );
 
-        publicationMenu.items.push({
-            key: 'publication_customQuestions',
-            label: args.pageInitConfig.customQuestionsLabel,
-            state: {
-                primaryMenuItem: 'publication',
-                secondaryMenuItem: 'customQuestions',
-                title: args.pageInitConfig.customQuestionsLabel,
-            },
+        store.extender.extendFn('getMenuItems', function (items, args) {
+            var publicationMenu = items.find(function (item) {
+                return item.key === 'publication';
+            });
+
+            if (!publicationMenu || !args.submission) {
+                return items;
+            }
+
+            publicationMenu.items.push({
+                key: 'publication_customQuestions',
+                label: config.label,
+                state: {
+                    primaryMenuItem: 'publication',
+                    secondaryMenuItem: 'customQuestions',
+                    title: config.label,
+                },
+            });
+
+            return items;
         });
 
-        return items;
+        store.extender.extendFn('getPrimaryItems', function (items, args) {
+            if (
+                args.selectedMenuState.primaryMenuItem !== 'publication'
+                || args.selectedMenuState.secondaryMenuItem !== 'customQuestions'
+            ) {
+                return items;
+            }
+
+            return [{
+                component: 'CustomQuestionsWorkflowForm',
+                props: {
+                    apiUrl: config.apiUrl.replace(
+                        '__submissionId__',
+                        args.submission.id
+                    ),
+                },
+            }];
+        });
+
+        if (store.submission) {
+            store.submission = Object.assign({}, store.submission);
+        }
+        return true;
+    }
+
+    pkp.registry.storeExtend('workflow', function (context) {
+        Promise.resolve().then(function () {
+            installWorkflowExtensions(context.store);
+        });
     });
 
-    pkp.registry.storeExtendFn('workflow', 'getPrimaryItems', function (items, args) {
-        if (
-            args.selectedMenuState.primaryMenuItem !== 'publication'
-            || args.selectedMenuState.secondaryMenuItem !== 'customQuestions'
-        ) {
-            return items;
+    pkp.eventBus.$on('root:mounted', function () {
+        try {
+            installWorkflowExtensions(pkp.registry.getPiniaStore('workflow'));
+        } catch (error) {
+            // The workflow store is created lazily when a submission is opened.
         }
-
-        return [{
-            component: 'CustomQuestionsWorkflowForm',
-            props: {
-                apiUrl: args.pageInitConfig.customQuestionsApiUrl.replace(
-                    '__submissionId__',
-                    args.submission.id
-                ),
-            },
-        }];
     });
 }());
