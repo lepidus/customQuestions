@@ -3,6 +3,11 @@ import {
 	newTestRunId,
 } from '../../support/customQuestions';
 
+const findQuestionRow = (title) => {
+	return cy.contains('tr[id*="customquestiongrid-row"]:visible .label', title)
+		.closest('tr[id*="customquestiongrid-row"]');
+};
+
 describe('Custom Questions administration', function () {
 	let testRunId;
 
@@ -30,7 +35,7 @@ describe('Custom Questions administration', function () {
 			});
 		cy.get('input[id^="select-cell-customquestionsplugin-enabled"]').should('be.checked');
 		cy.get('tr[id*="customquestionsplugin"] a.show_extras').click();
-		cy.get('a[id*="customquestionsplugin-settings"]').click();
+		cy.get('a[id*="customquestionsplugin-settings"]:visible').click();
 
 		cy.contains('a', 'Create New Question').click();
 		cy.get('#customQuestionForm').should('be.visible');
@@ -48,12 +53,9 @@ describe('Custom Questions administration', function () {
 		cy.contains('Your changes have been saved.').should('be.visible');
 		cy.get('button.DialogClose:visible').last().click();
 
-		cy.get('a[id*="customquestionsplugin-settings"]').click();
-		cy.contains('tr[id*="customquestiongrid-row"] .label', originalTitle)
-			.closest('tr[id*="customquestiongrid-row"]')
-			.as('questionRow');
-		cy.get('@questionRow').find('a.show_extras').click();
-		cy.get('@questionRow').next().contains('a', 'Edit').click();
+		cy.get('a[id*="customquestionsplugin-settings"]:visible').click();
+		findQuestionRow(originalTitle).find('a.show_extras').click();
+		findQuestionRow(originalTitle).next().contains('a', 'Edit').click();
 		cy.get('#customQuestionForm').should('be.visible');
 		cy.get('input[name="title[en]"]').clear().type(editedTitle);
 		cy.get('input[name="required"]').then(($input) => {
@@ -66,15 +68,10 @@ describe('Custom Questions administration', function () {
 		cy.contains('Your changes have been saved.').should('be.visible');
 		cy.get('button.DialogClose:visible').last().click();
 
-		cy.get('a[id*="customquestionsplugin-settings"]').click();
-		cy.contains('tr[id*="customquestiongrid-row"] .label', editedTitle)
-			.closest('tr[id*="customquestiongrid-row"]')
-			.find('a.show_extras').click();
-		cy.contains('tr[id*="customquestiongrid-row"] .label', editedTitle)
-			.closest('tr[id*="customquestiongrid-row"]')
-			.next()
-			.contains('a', 'Delete').click();
+		cy.get('a[id*="customquestionsplugin-settings"]:visible').click();
+		findQuestionRow(editedTitle).find('a.show_extras').click();
+		findQuestionRow(editedTitle).next().contains('a', 'Delete').click();
 		cy.contains('button', 'OK').click();
-		cy.contains('tr[id*="customquestiongrid-row"] .label', editedTitle).should('not.exist');
+		cy.contains('tr[id*="customquestiongrid-row"]:visible .label', editedTitle).should('not.exist');
 	});
 });
