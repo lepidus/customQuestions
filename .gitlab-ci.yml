@@ -10,3 +10,13 @@ include:
       - 'templates/groups/ops/unit_tests.yml'
       - 'templates/groups/ojs/cypress_tests.yml'
       - 'templates/groups/ops/cypress_tests.yml'
+
+# Run the plugin integration suites below, but leave the full application
+# integration suites to the OJS and OPS application pipelines.
+ojs_integration_tests:
+  rules:
+    - when: never
+
+ops_integration_tests:
+  rules:
+    - when: never
