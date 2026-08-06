@@ -3,7 +3,8 @@
 namespace APP\plugins\generic\customQuestions\tests;
 
 use APP\plugins\generic\customQuestions\classes\facades\Repo;
-use PKP\db\DAORegistry;
+use APP\plugins\generic\customQuestions\CustomQuestionsSchemaMigration;
+use Illuminate\Support\Facades\Schema;
 use PKP\plugins\Hook;
 use PKP\tests\DatabaseTestCase;
 
@@ -11,6 +12,15 @@ class CustomQuestionsTestCase extends DatabaseTestCase
 {
     protected $contextId;
     protected $submissionId;
+
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+
+        if (!Schema::hasTable('custom_questions')) {
+            (new CustomQuestionsSchemaMigration())->up();
+        }
+    }
 
     protected function getAffectedTables(): array
     {
@@ -47,6 +57,9 @@ class CustomQuestionsTestCase extends DatabaseTestCase
         $context->setData('seq', 2.0);
         $context->setData('enabled', true);
         $context->setData('primaryLocale', 'en');
+        $context->setData('supportedFormLocales', ['en']);
+        $context->setData('supportedLocales', ['en']);
+        $context->setData('supportedSubmissionLocales', ['en']);
         $context->setPath('testContext');
         $this->contextId = $contextDAO->insertObject($context);
     }
@@ -55,6 +68,7 @@ class CustomQuestionsTestCase extends DatabaseTestCase
     {
         $submission = Repo::submission()->newDataObject();
         $submission->setData('contextId', $this->contextId);
+        $submission->setData('locale', 'en');
         $this->submissionId = Repo::submission()->dao->insert($submission);
 
         $publication = Repo::publication()->newDataObject();

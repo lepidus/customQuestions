@@ -6,7 +6,8 @@ A plugin to add custom questions to submission wizard
 
 The latest release of this plugin is compatible with the following PKP applications:
 
-* OJS and OPS 3.4.0
+* OJS 3.5.0
+* OPS 3.5.0
 
 ## Installation
 
@@ -27,7 +28,7 @@ lib/pkp/lib/vendor/phpunit/phpunit/phpunit -c lib/pkp/tests/phpunit.xml plugins/
 
 To execute Cypress integration tests, run the following command from root of the PKP Appplication directory:
 ```bash
-$(npm bin)/cypress run --config '{"specPattern":["plugins/generic/customQuestions/cypress/tests/functional/**/*.cy.js"]}'
+npx cypress run --config '{"specPattern":["plugins/generic/customQuestions/cypress/tests/functional/**/*.cy.js"]}'
 ```
 
 # License

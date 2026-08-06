@@ -61,4 +61,25 @@ class DAOTest extends CustomQuestionsTestCase
         $customQuestionResponseDAO->delete($customQuestionResponse);
         self::assertFalse($customQuestionResponseDAO->exists($customQuestionResponse->getId(), $customQuestionId));
     }
+
+    public function testEmptyCheckboxResponseRoundTrip(): void
+    {
+        $customQuestion = Repo::customQuestion()->newDataObject();
+        $customQuestion->setContextId($this->contextId);
+        $customQuestion->setTitle('Empty checkbox response', 'en');
+        $customQuestion->setQuestionType(CustomQuestion::CUSTOM_QUESTION_TYPE_CHECKBOXES);
+        $customQuestionId = Repo::customQuestion()->add($customQuestion);
+
+        $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
+        $customQuestionResponse = $customQuestionResponseDAO->newDataObject();
+        $customQuestionResponse->setSubmissionId($this->submissionId);
+        $customQuestionResponse->setCustomQuestionId($customQuestionId);
+        $customQuestionResponse->setValue([]);
+        $customQuestionResponse->setResponseType('array');
+        $customQuestionResponseDAO->insert($customQuestionResponse);
+
+        $fetchedCustomQuestionResponse = $customQuestionResponseDAO->get($customQuestionResponse->getId());
+
+        self::assertSame([], $fetchedCustomQuestionResponse->getValue());
+    }
 }

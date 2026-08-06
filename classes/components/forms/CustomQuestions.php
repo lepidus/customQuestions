@@ -17,29 +17,38 @@ class CustomQuestions extends FormComponent
     public $id = 'customQuestions';
     public $method = 'PUT';
 
-    public function __construct(string $action, array $locales, LazyCollection $customQuestions, int $submissionId)
-    {
+    public function __construct(
+        string $action,
+        array $locales,
+        LazyCollection $customQuestions,
+        int $submissionId,
+        ?string $locale = null
+    ) {
         $this->action = $action;
         $this->locales = $locales;
+        $locale ??= $locales[0]['key'] ?? array_key_first($locales);
 
         foreach ($customQuestions as $customQuestion) {
-            $fieldComponent = $this->getCustomQuestionFieldComponent($customQuestion, $submissionId);
+            $fieldComponent = $this->getCustomQuestionFieldComponent($customQuestion, $submissionId, $locale);
             $this->addField($fieldComponent);
         }
     }
 
-    private function getCustomQuestionFieldComponent(CustomQuestion $customQuestion, int $submissionId): Field
-    {
+    private function getCustomQuestionFieldComponent(
+        CustomQuestion $customQuestion,
+        int $submissionId,
+        ?string $locale
+    ): Field {
         $customQuestionResponse = Repo::customQuestionResponse()
             ->getByCustomQuestionId($customQuestion->getId(), $submissionId);
 
         $fieldName = 'customQuestion-' . $customQuestion->getId();
         $responseValue = $customQuestionResponse ? $customQuestionResponse->getValue() : null;
-        $baseConfig = $this->getBaseFieldConfig($customQuestion);
+        $baseConfig = $this->getBaseFieldConfig($customQuestion, $locale);
         $optionConfig = array_merge(
             $baseConfig,
             [
-                'options' => $this->getPossibleResponseOptions($customQuestion),
+                'options' => $this->getPossibleResponseOptions($customQuestion, $locale),
                 'value' => $responseValue ?? [],
             ]
         );
@@ -97,23 +106,26 @@ class CustomQuestions extends FormComponent
         };
     }
 
-    private function getBaseFieldConfig(CustomQuestion $customQuestion): array
+    private function getBaseFieldConfig(CustomQuestion $customQuestion, ?string $locale): array
     {
         return [
-            'label' => $customQuestion->getLocalizedTitle(),
-            'description' => $this->removeDescriptionWrapperParagraph($customQuestion->getLocalizedDescription()),
+            'label' => $customQuestion->getLocalizedTitle($locale),
+            'description' => $this->removeDescriptionWrapperParagraph(
+                $customQuestion->getLocalizedDescription($locale)
+            ),
             'isRequired' => $customQuestion->getRequired(),
         ];
     }
 
-    private function getPossibleResponseOptions(CustomQuestion $customQuestion): array
+    private function getPossibleResponseOptions(CustomQuestion $customQuestion, ?string $locale): array
     {
         $possibleResponses = [];
-        if (!$customQuestion->getLocalizedPossibleResponses()) {
+        $localizedPossibleResponses = $customQuestion->getLocalizedPossibleResponses($locale);
+        if (!$localizedPossibleResponses) {
             return $possibleResponses;
         }
 
-        foreach ($customQuestion->getLocalizedPossibleResponses() as $index => $responseItem) {
+        foreach ($localizedPossibleResponses as $index => $responseItem) {
             $possibleResponses[] = [
                 'value' => $index,
                 'label' => $responseItem,

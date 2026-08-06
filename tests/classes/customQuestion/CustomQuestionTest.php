@@ -60,9 +60,9 @@ class CustomQuestionTest extends PKPTestCase
         $customQuestion->setData('title', $title);
         $customQuestion->setData('description', $description);
         $customQuestion->setData('possibleResponses', $possibleResponses);
-        self::assertEquals($title['en'], $customQuestion->getLocalizedTitle());
-        self::assertEquals($description['en'], $customQuestion->getLocalizedDescription());
-        self::assertEquals($possibleResponses['en'], $customQuestion->getLocalizedPossibleResponses());
+        self::assertEquals($title['en'], $customQuestion->getLocalizedTitle('en'));
+        self::assertEquals($description['en'], $customQuestion->getLocalizedDescription('en'));
+        self::assertEquals($possibleResponses['en'], $customQuestion->getLocalizedPossibleResponses('en'));
     }
 
     public function testGetCustomQuestionTypeOptions(): void

@@ -11,19 +11,43 @@ class CustomQuestion extends \PKP\core\DataObject
     public const CUSTOM_QUESTION_TYPE_RADIO_BUTTONS = 5;
     public const CUSTOM_QUESTION_TYPE_DROP_DOWN_BOX = 6;
 
-    public function getLocalizedTitle()
+    public function getLocalizedTitle(?string $preferredLocale = null)
     {
-        return $this->getLocalizedData('title');
+        return $this->getLocalizedCustomQuestionData('title', $preferredLocale);
     }
 
-    public function getLocalizedDescription()
+    public function getLocalizedDescription(?string $preferredLocale = null)
     {
-        return $this->getLocalizedData('description');
+        return $this->getLocalizedCustomQuestionData('description', $preferredLocale);
     }
 
-    public function getLocalizedPossibleResponses()
+    public function getLocalizedPossibleResponses(?string $preferredLocale = null)
     {
-        return $this->getLocalizedData('possibleResponses');
+        return $this->getLocalizedCustomQuestionData('possibleResponses', $preferredLocale);
+    }
+
+    private function getLocalizedCustomQuestionData(string $key, ?string $preferredLocale = null)
+    {
+        if ($preferredLocale === null) {
+            return $this->getLocalizedData($key);
+        }
+
+        $value = $this->getData($key);
+        if (!is_array($value)) {
+            return $value;
+        }
+
+        if (!empty($value[$preferredLocale])) {
+            return $value[$preferredLocale];
+        }
+
+        foreach ($value as $localizedValue) {
+            if (!empty($localizedValue)) {
+                return $localizedValue;
+            }
+        }
+
+        return null;
     }
 
     public function getContextId()
