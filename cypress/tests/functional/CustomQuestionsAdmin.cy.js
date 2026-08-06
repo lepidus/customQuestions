@@ -83,9 +83,8 @@ describe('Custom Questions administration', function () {
 		findQuestionRow(originalTitle).find('a.show_extras').click();
 		findQuestionRow(originalTitle).next().contains('a', 'Edit').click();
 		cy.get('#customQuestionForm').should('be.visible');
-		cy.get('input[name="title[en]"]').clear().type(editedTitle);
-		// Return focus to the form before making the question optional
-		cy.get('textarea[name="description[en]"]').click({force: true});
+		cy.get('input[name="title[en]"]').clear().type(editedTitle).blur();
+		cy.get('.localization_popover:visible').should('not.exist');
 		cy.get('input[name="required"]').uncheck().should('not.be.checked');
 		cy.get('select[name="questionType"]').select('Single line text box');
 		cy.get('#customQuestionForm button[id^="submitFormButton-"]').click();
