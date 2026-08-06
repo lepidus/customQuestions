@@ -71,7 +71,7 @@ describe('Custom Questions administration', function () {
 		cy.get('textarea[name="description[en]"]').then(($textarea) => {
 			cy.setTinyMceContent($textarea.attr('id'), 'Administration question description.');
 		});
-		cy.contains('label', 'Required to complete item').click();
+		cy.contains('label', 'Required to complete item').click({scrollBehavior: 'center'});
 		cy.get('input[name="required"]').should('be.checked');
 		cy.get('select[name="questionType"]').select('Single word text box');
 		cy.get('#customQuestionForm button[id^="submitFormButton-"]').click();
@@ -85,7 +85,7 @@ describe('Custom Questions administration', function () {
 		findQuestionRow(originalTitle).next().contains('a', 'Edit').click();
 		cy.get('#customQuestionForm').should('be.visible');
 		cy.get('input[name="title[en]"]').clear().type(editedTitle);
-		cy.contains('label', 'Required to complete item').click();
+		cy.contains('label', 'Required to complete item').click({scrollBehavior: 'center'});
 		cy.get('input[name="required"]').should('not.be.checked');
 		cy.get('select[name="questionType"]').select('Single line text box');
 		cy.get('#customQuestionForm button[id^="submitFormButton-"]').click();
