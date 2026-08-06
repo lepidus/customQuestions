@@ -4,6 +4,6 @@
     <application>customQuestions</application>
     <type>plugins.generic</type>
     <class>CustomQuestionsPlugin</class>
-    <release>1.1.0.3</release>
-    <date>2026-07-06</date>
+    <release>2.0.0.0</release>
+    <date>2026-08-06</date>
 </version>
