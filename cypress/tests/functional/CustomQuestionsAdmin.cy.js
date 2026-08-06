@@ -14,19 +14,39 @@ describe('Custom Questions administration', function () {
 
 	beforeEach(function () {
 		testRunId = newTestRunId('admin');
-		enableCustomQuestions(testRunId).its('operation').should('equal', 'enable');
 		cy.viewport(1280, 1200);
-		cy.login('admin', 'admin', 'publicknowledge');
 	});
 
 	afterEach(function () {
 		cleanupCustomQuestions(testRunId);
 	});
 
+	it('enables the plugin without breaking the application', function () {
+		cy.login('admin', 'admin', 'publicknowledge');
+		cy.visit('/index.php/publicknowledge/management/settings/website');
+		cy.get('#plugins-button').click();
+		cy.get('input[id^="select-cell-customquestionsplugin-enabled"]')
+			.then(($checkbox) => {
+				if ($checkbox.is(':checked')) {
+					cy.wrap($checkbox).uncheck();
+					cy.contains('button', 'OK').click();
+				}
+			});
+		cy.get('input[id^="select-cell-customquestionsplugin-enabled"]').should('not.be.checked').check();
+		cy.get('input[id^="select-cell-customquestionsplugin-enabled"]').should('be.checked');
+
+		cy.visit('/index.php/publicknowledge/management/settings/website');
+		cy.get('#plugins-button').click();
+		cy.get('tr[id*="customquestionsplugin"] a.show_extras').click();
+		cy.get('a[id*="customquestionsplugin-settings"]:visible').should('exist');
+	});
+
 	it('creates, edits and deletes a custom question', function () {
 		const originalTitle = `Administration question [${testRunId}]`;
 		const editedTitle = `Edited administration question [${testRunId}]`;
 
+		enableCustomQuestions(testRunId).its('operation').should('equal', 'enable');
+		cy.login('admin', 'admin', 'publicknowledge');
 		cy.visit('/index.php/publicknowledge/management/settings/website');
 		cy.get('#plugins-button').click();
 		cy.get('tr[id*="customquestionsplugin"] a.show_extras').click();
