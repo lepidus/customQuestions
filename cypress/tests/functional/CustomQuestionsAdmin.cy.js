@@ -71,10 +71,11 @@ describe('Custom Questions administration', function () {
 		cy.get('textarea[name="description[en]"]').then(($textarea) => {
 			cy.setTinyMceContent($textarea.attr('id'), 'Administration question description.');
 		});
+		// Scroll past the description editors and mark the question as required
+		cy.get('.pkp_modal.is_visible').scrollTo('bottom');
 		cy.contains('label', 'Required to complete item')
-			.scrollIntoView({offset: {top: -200, left: 0}})
 			.should('be.visible')
-			.click({scrollBehavior: false});
+			.click();
 		cy.get('input[name="required"]').should('be.checked');
 		cy.get('select[name="questionType"]').select('Single word text box');
 		cy.get('#customQuestionForm button[id^="submitFormButton-"]').click();
@@ -88,10 +89,11 @@ describe('Custom Questions administration', function () {
 		findQuestionRow(originalTitle).next().contains('a', 'Edit').click();
 		cy.get('#customQuestionForm').should('be.visible');
 		cy.get('input[name="title[en]"]').clear().type(editedTitle);
+		// Scroll to the question options and make the question optional
+		cy.get('.pkp_modal.is_visible').scrollTo('bottom');
 		cy.contains('label', 'Required to complete item')
-			.scrollIntoView({offset: {top: -200, left: 0}})
 			.should('be.visible')
-			.click({scrollBehavior: false});
+			.click();
 		cy.get('input[name="required"]').should('not.be.checked');
 		cy.get('select[name="questionType"]').select('Single line text box');
 		cy.get('#customQuestionForm button[id^="submitFormButton-"]').click();
