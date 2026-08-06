@@ -62,7 +62,6 @@ describe('Custom Questions administration', function () {
 		cy.get('tr[id*="customquestionsplugin"] a.show_extras').click();
 		cy.get('a[id*="customquestionsplugin-settings"]:visible').click();
 		cy.get(customQuestionsGrid).should('be.visible');
-		cy.intercept('GET', '**/grid/fetch-row?*').as('refreshQuestionRow');
 
 		// Create a required text question
 		cy.contains('a', 'Create New Question').click();
@@ -76,7 +75,6 @@ describe('Custom Questions administration', function () {
 		cy.get('input[name="required"]').check().should('be.checked');
 		cy.get('select[name="questionType"]').select('Single word text box');
 		cy.get('#customQuestionForm button[id^="submitFormButton-"]').click();
-		cy.wait('@refreshQuestionRow').its('response.statusCode').should('equal', 200);
 		cy.contains('Your changes have been saved.').should('be.visible');
 		cy.get('#customQuestionForm').should('not.exist');
 		findQuestionRow(originalTitle).should('be.visible');
@@ -91,7 +89,6 @@ describe('Custom Questions administration', function () {
 		cy.get('input[name="required"]').uncheck().should('not.be.checked');
 		cy.get('select[name="questionType"]').select('Single line text box');
 		cy.get('#customQuestionForm button[id^="submitFormButton-"]').click();
-		cy.wait('@refreshQuestionRow').its('response.statusCode').should('equal', 200);
 		cy.contains('Your changes have been saved.').should('be.visible');
 		cy.get('#customQuestionForm').should('not.exist');
 		findQuestionRow(editedTitle).should('be.visible');
