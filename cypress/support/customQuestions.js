@@ -33,6 +33,10 @@ export const seedCustomQuestions = (testRunId, options = {}) => {
 	return runHelper('seed', testRunId, options);
 };
 
+export const enableCustomQuestions = (testRunId) => {
+	return runHelper('enable', testRunId);
+};
+
 export const cleanupCustomQuestions = (testRunId) => {
 	return runHelper('cleanup', testRunId);
 };

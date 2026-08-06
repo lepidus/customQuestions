@@ -79,6 +79,21 @@ function cleanup(int $contextId, string $marker): array
     ];
 }
 
+function enableCustomQuestionsPlugin(int $contextId): void
+{
+    DB::table('plugin_settings')->updateOrInsert(
+        [
+            'plugin_name' => PLUGIN_NAME,
+            'context_id' => $contextId,
+            'setting_name' => 'enabled',
+        ],
+        [
+            'setting_value' => '1',
+            'setting_type' => 'bool',
+        ]
+    );
+}
+
 function getSubmissionId(int $contextId, string $title): int
 {
     $submissionIds = DB::table('submissions as s')
@@ -118,11 +133,11 @@ $startedAt = microtime(true);
 $operation = $argv[1] ?? '';
 $options = parseOptions(array_slice($argv, 2));
 
-if (!in_array($operation, ['seed', 'cleanup', 'count'], true)) {
-    fail('Operation must be seed, cleanup or count.');
+if (!in_array($operation, ['seed', 'cleanup', 'count', 'enable'], true)) {
+    fail('Operation must be seed, cleanup, count or enable.');
 }
 if (empty($options['apply']) && $operation !== 'count') {
-    fail('--apply is required for seed and cleanup.');
+    fail('--apply is required for seed, cleanup and enable.');
 }
 
 $contextPath = $options['context-path'] ?? '';
@@ -158,6 +173,15 @@ if ($operation === 'count') {
 }
 
 $result = DB::transaction(function () use ($operation, $options, $fixture, $marker, $testRunId, $contextId) {
+    if ($operation === 'enable') {
+        enableCustomQuestionsPlugin($contextId);
+        return [
+            'operation' => 'enable',
+            'testRunId' => $testRunId,
+            'contextId' => $contextId,
+        ];
+    }
+
     $removed = cleanup($contextId, $marker);
     if ($operation === 'cleanup') {
         return array_merge([
@@ -166,17 +190,7 @@ $result = DB::transaction(function () use ($operation, $options, $fixture, $mark
         ], $removed);
     }
 
-    DB::table('plugin_settings')->updateOrInsert(
-        [
-            'plugin_name' => PLUGIN_NAME,
-            'context_id' => $contextId,
-            'setting_name' => 'enabled',
-        ],
-        [
-            'setting_value' => '1',
-            'setting_type' => 'bool',
-        ]
-    );
+    enableCustomQuestionsPlugin($contextId);
 
     $submissionId = isset($options['submission-title'])
         ? getSubmissionId($contextId, $options['submission-title'])

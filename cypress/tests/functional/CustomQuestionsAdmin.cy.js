@@ -1,5 +1,6 @@
 import {
 	cleanupCustomQuestions,
+	enableCustomQuestions,
 	newTestRunId,
 } from '../../support/customQuestions';
 
@@ -13,6 +14,7 @@ describe('Custom Questions administration', function () {
 
 	beforeEach(function () {
 		testRunId = newTestRunId('admin');
+		enableCustomQuestions(testRunId).its('operation').should('equal', 'enable');
 		cy.viewport(1280, 1200);
 		cy.login('admin', 'admin', 'publicknowledge');
 	});
@@ -27,13 +29,6 @@ describe('Custom Questions administration', function () {
 
 		cy.visit('/index.php/publicknowledge/management/settings/website');
 		cy.get('#plugins-button').click();
-		cy.get('input[id^="select-cell-customquestionsplugin-enabled"]')
-			.then(($checkbox) => {
-				if (!$checkbox.is(':checked')) {
-					cy.wrap($checkbox).check();
-				}
-			});
-		cy.get('input[id^="select-cell-customquestionsplugin-enabled"]').should('be.checked');
 		cy.get('tr[id*="customquestionsplugin"] a.show_extras').click();
 		cy.get('a[id*="customquestionsplugin-settings"]:visible').click();
 
