@@ -3,7 +3,8 @@
 namespace APP\plugins\generic\customQuestions\tests;
 
 use APP\plugins\generic\customQuestions\classes\facades\Repo;
-use PKP\db\DAORegistry;
+use APP\plugins\generic\customQuestions\CustomQuestionsSchemaMigration;
+use Illuminate\Support\Facades\Schema;
 use PKP\plugins\Hook;
 use PKP\tests\DatabaseTestCase;
 
@@ -11,6 +12,15 @@ class CustomQuestionsTestCase extends DatabaseTestCase
 {
     protected $contextId;
     protected $submissionId;
+
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+
+        if (!Schema::hasTable('custom_questions')) {
+            (new CustomQuestionsSchemaMigration())->up();
+        }
+    }
 
     protected function getAffectedTables(): array
     {
