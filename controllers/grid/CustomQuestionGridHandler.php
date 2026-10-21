@@ -162,13 +162,19 @@ class CustomQuestionGridHandler extends GridHandler
 
     public function deleteCustomQuestion(array $args, Request $request): JSONMessage
     {
-        $customQuestionId = (int) $request->getUserVar('rowId');
-
-        if ($request->checkCSRF()) {
-            Repo::customQuestion()->dao->deleteById($customQuestionId);
-            return \PKP\db\DAO::getDataChangedEvent($customQuestionId);
+        $context = $request->getContext();
+        if (!$context || !$request->checkCSRF()) {
+            return new JSONMessage(false);
         }
 
-        return new JSONMessage(false);
+        $customQuestionId = (int) $request->getUserVar('rowId');
+        $customQuestion = Repo::customQuestion()->get($customQuestionId, $context->getId());
+
+        if (!$customQuestion) {
+            return new JSONMessage(false);
+        }
+
+        Repo::customQuestion()->delete($customQuestion);
+        return \PKP\db\DAO::getDataChangedEvent($customQuestionId);
     }
 }
