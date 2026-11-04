@@ -2,6 +2,7 @@
 
 namespace APP\plugins\generic\customQuestions\classes\customQuestion;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
 use PKP\core\EntityDAO;
