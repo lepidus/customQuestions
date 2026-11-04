@@ -140,6 +140,9 @@ class CustomQuestionGridHandler extends GridHandler
         $customQuestionForm->readInputData();
         if ($customQuestionForm->validate()) {
             $customQuestionId = $customQuestionForm->execute();
+            if ($customQuestionId === null) {
+                return new JSONMessage(false);
+            }
 
             $notificationMgr = new NotificationManager();
             $user = $request->getUser();
@@ -156,7 +159,9 @@ class CustomQuestionGridHandler extends GridHandler
         $customQuestionId = (int) $request->getUserVar('rowId');
 
         $customQuestionForm = $this->getCustomQuestionForm($request, $customQuestionId);
-        $customQuestionForm->initData();
+        if (!$customQuestionForm->initData()) {
+            return new JSONMessage(false);
+        }
         return new JSONMessage(true, $customQuestionForm->fetch($request));
     }
 
