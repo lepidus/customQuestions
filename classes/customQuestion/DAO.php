@@ -90,6 +90,8 @@ class DAO extends EntityDAO
     {
         $customQuestionIds = DB::table($this->table)
             ->where('context_id', '=', $contextId)
+            ->orderBy('seq')
+            ->orderBy($this->primaryKeyColumn)
             ->pluck($this->primaryKeyColumn);
 
         $i = 0;

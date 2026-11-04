@@ -85,7 +85,7 @@ class CustomQuestionForm extends Form
         if ($this->customQuestionId) {
             $customQuestion = Repo::customQuestion()->get($this->customQuestionId, $this->contextId);
         } else {
-            $customQuestion = Repo::customQuestion()->newDataObject(['sequence' => REALLY_BIG_NUMBER]);
+            $customQuestion = Repo::customQuestion()->newDataObject();
         }
 
         $params = [
@@ -112,6 +112,7 @@ class CustomQuestionForm extends Form
         if ($customQuestion->getId()) {
             Repo::customQuestion()->edit($customQuestion, $params);
         } else {
+            $params['sequence'] = REALLY_BIG_NUMBER;
             $customQuestion->setAllData($params);
             $this->customQuestionId = Repo::customQuestion()->add($customQuestion);
             Repo::customQuestion()->dao->resequence($this->contextId);

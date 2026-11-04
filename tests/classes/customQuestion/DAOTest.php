@@ -88,4 +88,61 @@ class DAOTest extends CustomQuestionsTestCase
         $fetchedCustomQuestion = $customQuestionDAO->get($customQuestion->getId(), $this->contextId);
         self::assertEquals(++$lastSeq, $fetchedCustomQuestion->getSequence());
     }
+    public function testCollectorReturnsQuestionsInSequenceOrderWithPagination(): void
+    {
+        $dao = app(DAO::class);
+        $last = $this->createQuestionWithSequence(3.0);
+        $first = $this->createQuestionWithSequence(1.0);
+        $middle = $this->createQuestionWithSequence(2.0);
+        $collector = new \APP\plugins\generic\customQuestions\classes\customQuestion\Collector($dao);
+        $collector->filterByContextIds([$this->contextId]);
+
+        self::assertSame([$first, $middle, $last], $collector->getMany()->keys()->all());
+        self::assertSame([$middle], $collector->offset(1)->limit(1)->getMany()->keys()->all());
+    }
+
+    public function testResequencePreservesReorderedQuestionsWhenAddingQuestion(): void
+    {
+        $dao = app(DAO::class);
+        $second = $this->createQuestionWithSequence(2.0);
+        $first = $this->createQuestionWithSequence(1.0);
+        $newQuestion = $this->createQuestionWithSequence(REALLY_BIG_NUMBER);
+
+        $dao->resequence($this->contextId);
+
+        self::assertEquals(1.0, $dao->get($first, $this->contextId)->getSequence());
+        self::assertEquals(2.0, $dao->get($second, $this->contextId)->getSequence());
+        self::assertEquals(3.0, $dao->get($newQuestion, $this->contextId)->getSequence());
+    }
+
+    public function testFormAppendsNewQuestionAfterReorderedQuestions(): void
+    {
+        $second = $this->createQuestionWithSequence(2.0);
+        $first = $this->createQuestionWithSequence(1.0);
+        $form = new \APP\plugins\generic\customQuestions\controllers\grid\form\CustomQuestionForm(
+            'unused.tpl',
+            $this->contextId
+        );
+        $form->setData('title', ['en' => 'New question']);
+        $form->setData('questionType', CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD);
+
+        $newQuestion = $form->execute();
+
+        $collector = new \APP\plugins\generic\customQuestions\classes\customQuestion\Collector(app(DAO::class));
+        self::assertSame(
+            [$first, $second, $newQuestion],
+            $collector->filterByContextIds([$this->contextId])->getMany()->keys()->all()
+        );
+    }
+
+    private function createQuestionWithSequence(float $sequence): int
+    {
+        $dao = app(DAO::class);
+        $question = $dao->newDataObject();
+        $question->setContextId($this->contextId);
+        $question->setSequence($sequence);
+        $question->setQuestionType(CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD);
+        return $dao->insert($question);
+    }
+
 }
