@@ -20,3 +20,16 @@ ojs_integration_tests:
 ops_integration_tests:
   rules:
     - when: never
+
+.custom_questions_schema_database:
+  - |
+    CUSTOM_QUESTIONS_SCHEMA_TEST_CONFIG="$(php "$CI_PROJECT_DIR/tests/prepareSchemaTestDatabase.php")"
+    export CUSTOM_QUESTIONS_SCHEMA_TEST_CONFIG
+
+plugin_unit_tests_ojs:
+  before_script:
+    - !reference [.custom_questions_schema_database]
+
+plugin_unit_tests_ops:
+  before_script:
+    - !reference [.custom_questions_schema_database]

@@ -3,6 +3,7 @@
 namespace APP\plugins\generic\customQuestions\classes\customQuestionResponse;
 
 use APP\plugins\generic\customQuestions\classes\facades\Repo;
+use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 use PKP\core\EntityDAO;
 use PKP\core\traits\EntityWithParent;

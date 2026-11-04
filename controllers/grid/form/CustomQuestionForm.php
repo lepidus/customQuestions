@@ -54,16 +54,20 @@ class CustomQuestionForm extends Form
         return parent::fetch($request, $template, $display);
     }
 
-    public function initData(): void
+    public function initData(): bool
     {
         if (!$this->customQuestionId) {
-            return ;
+            return true;
         }
 
         $customQuestion = Repo::customQuestion()->get(
             $this->customQuestionId,
             $this->contextId
         );
+        if (!$customQuestion) {
+            return false;
+        }
+
         $this->_data = [
             'title' => $customQuestion->getData('title'),
             'description' => $customQuestion->getData('description'),
@@ -71,6 +75,7 @@ class CustomQuestionForm extends Form
             'questionType' => $customQuestion->getQuestionType(),
             'possibleResponses' => $customQuestion->getData('possibleResponses')
         ];
+        return true;
     }
 
     public function readInputData(): void
@@ -78,14 +83,17 @@ class CustomQuestionForm extends Form
         $this->readUserVars(['title', 'description', 'required', 'questionType', 'possibleResponses']);
     }
 
-    public function execute(...$functionArgs): int
+    public function execute(...$functionArgs): ?int
     {
         $request = Application::get()->getRequest();
 
         if ($this->customQuestionId) {
             $customQuestion = Repo::customQuestion()->get($this->customQuestionId, $this->contextId);
+            if (!$customQuestion) {
+                return null;
+            }
         } else {
-            $customQuestion = Repo::customQuestion()->newDataObject(['sequence' => REALLY_BIG_NUMBER]);
+            $customQuestion = Repo::customQuestion()->newDataObject();
         }
 
         $params = [
@@ -112,6 +120,7 @@ class CustomQuestionForm extends Form
         if ($customQuestion->getId()) {
             Repo::customQuestion()->edit($customQuestion, $params);
         } else {
+            $params['sequence'] = REALLY_BIG_NUMBER;
             $customQuestion->setAllData($params);
             $this->customQuestionId = Repo::customQuestion()->add($customQuestion);
             Repo::customQuestion()->dao->resequence($this->contextId);
