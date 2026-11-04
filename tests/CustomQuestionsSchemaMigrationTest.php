@@ -3,6 +3,7 @@
 namespace APP\plugins\generic\customQuestions\tests;
 
 use APP\core\Application;
+use APP\plugins\generic\customQuestions\classes\migrations\AddCustomQuestionSettingsForeignKey;
 use APP\plugins\generic\customQuestions\classes\migrations\RepairCustomQuestionsSchema;
 use APP\plugins\generic\customQuestions\CustomQuestionsSchemaMigration;
 use Illuminate\Container\Container;
@@ -128,6 +129,47 @@ class CustomQuestionsSchemaMigrationTest extends TestCase
 
         self::assertSame('Keep this answer', DB::table('custom_question_responses')->value('response_value'));
         $this->assertUniqueConstraintsExist();
+    }
+
+    public function testDeletingContextCascadesToQuestionSettings(): void
+    {
+        (new CustomQuestionsSchemaMigration())->up();
+        DB::table($this->contextTable)->insert([$this->contextKey => 1]);
+        DB::table('custom_questions')->insert([
+            'custom_question_id' => 1, 'context_id' => 1, 'question_type' => 1,
+        ]);
+        DB::table('custom_question_settings')->insert([
+            'custom_question_id' => 1, 'locale' => 'en', 'setting_name' => 'title', 'setting_value' => 'Title',
+        ]);
+
+        DB::table($this->contextTable)->where($this->contextKey, 1)->delete();
+
+        self::assertSame(0, DB::table('custom_questions')->count());
+        self::assertSame(0, DB::table('custom_question_settings')->count());
+    }
+
+    public function testUpgradeRemovesOnlyOrphanSettingsAndAddsCascade(): void
+    {
+        Schema::create('custom_questions', function (Blueprint $table) {
+            $table->bigInteger('custom_question_id')->autoIncrement();
+        });
+        Schema::create('custom_question_settings', function (Blueprint $table) {
+            $table->bigIncrements('custom_question_setting_id');
+            $table->bigInteger('custom_question_id');
+            $table->string('setting_value');
+        });
+        DB::table('custom_questions')->insert(['custom_question_id' => 1]);
+        DB::table('custom_question_settings')->insert([
+            ['custom_question_id' => 1, 'setting_value' => 'Keep me'],
+            ['custom_question_id' => 2, 'setting_value' => 'Orphan'],
+        ]);
+
+        (new AddCustomQuestionSettingsForeignKey())->up();
+        (new AddCustomQuestionSettingsForeignKey())->up();
+
+        self::assertSame(['Keep me'], DB::table('custom_question_settings')->pluck('setting_value')->all());
+        DB::table('custom_questions')->where('custom_question_id', 1)->delete();
+        self::assertSame(0, DB::table('custom_question_settings')->count());
     }
 
     private function assertUniqueConstraintsExist(): void

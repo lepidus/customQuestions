@@ -35,6 +35,10 @@ class CustomQuestionsSchemaMigration extends Migration
                 $table->string('setting_name', 255);
                 $table->longText('setting_value')->nullable();
 
+                $table->foreign('custom_question_id')
+                    ->references('custom_question_id')
+                    ->on('custom_questions')
+                    ->onDelete('cascade');
                 $table->index(['custom_question_id'], 'custom_question_settings_id');
                 $table->unique(['custom_question_id', 'locale', 'setting_name'], 'custom_question_settings_unique');
             });

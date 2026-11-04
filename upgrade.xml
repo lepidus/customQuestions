@@ -3,4 +3,5 @@
 
 <install>
     <migration class="APP\plugins\generic\customQuestions\classes\migrations\RepairCustomQuestionsSchema" />
+    <migration class="APP\plugins\generic\customQuestions\classes\migrations\AddCustomQuestionSettingsForeignKey" />
 </install>
