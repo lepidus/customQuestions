@@ -56,7 +56,9 @@ class Collector implements CollectorInterface
     public function getQueryBuilder(): Builder
     {
         $qb = DB::table($this->dao->table . ' as cq')
-            ->select(['cq.*']);
+            ->select(['cq.*'])
+            ->orderBy('cq.seq')
+            ->orderBy('cq.custom_question_id');
 
         if (isset($this->contextIds)) {
             $qb->whereIn('cq.context_id', $this->contextIds);

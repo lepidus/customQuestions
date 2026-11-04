@@ -2,6 +2,7 @@
 
 namespace APP\plugins\generic\customQuestions\classes\customQuestion;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
 use PKP\core\EntityDAO;
@@ -90,6 +91,8 @@ class DAO extends EntityDAO
     {
         $customQuestionIds = DB::table($this->table)
             ->where('context_id', '=', $contextId)
+            ->orderBy('seq')
+            ->orderBy($this->primaryKeyColumn)
             ->pluck($this->primaryKeyColumn);
 
         $i = 0;

@@ -81,4 +81,4 @@ msgid "plugins.generic.customQuestions.submissionWizard.name"
 msgstr "Perguntas personalizadas"
 
 msgid "plugins.generic.customQuestions.submissionWizard.description"
-msgstr "Essa seção possui algumas perguntas personalizadas feitas pelos administradores do servidor de preprints"
+msgstr "Esta seção contém perguntas personalizadas definidas pela equipe editorial."
