@@ -2,10 +2,12 @@
 
 namespace APP\plugins\generic\customQuestions\api\v1\customQuestionResponses;
 
+use APP\core\Application;
 use APP\plugins\generic\customQuestions\classes\facades\Repo;
 use PKP\core\APIResponse;
 use PKP\handler\APIHandler;
 use PKP\security\authorization\ContextAccessPolicy;
+use PKP\security\authorization\SubmissionAccessPolicy;
 use PKP\security\authorization\UserRolesRequiredPolicy;
 use PKP\security\Role;
 use Slim\Http\Request;
@@ -41,6 +43,8 @@ class CustomQuestionResponseHandler extends APIHandler
 
         $this->addPolicy(new ContextAccessPolicy($request, $roleAssignments));
 
+        $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments));
+
         return parent::authorize($request, $args, $roleAssignments);
     }
 
@@ -48,8 +52,8 @@ class CustomQuestionResponseHandler extends APIHandler
     {
         $request = $this->getRequest();
         $context = $request->getContext();
-        $params = $slimRequest->getParsedBody();
-        $submissionId = $args['submissionId'];
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+        $submissionId = $submission->getId();
 
         foreach ($slimRequest->getParsedBody() as $fieldName => $value) {
             $fieldNameParts = explode('-', $fieldName);
