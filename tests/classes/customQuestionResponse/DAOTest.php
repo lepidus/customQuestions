@@ -61,4 +61,27 @@ class DAOTest extends CustomQuestionsTestCase
         $customQuestionResponseDAO->delete($customQuestionResponse);
         self::assertFalse($customQuestionResponseDAO->exists($customQuestionResponse->getId(), $customQuestionId));
     }
+
+    public function testStoredSerializedObjectIsNotInstantiated(): void
+    {
+        $customQuestion = Repo::customQuestion()->newDataObject();
+        $customQuestion->setContextId($this->contextId);
+        $customQuestion->setTitle('Serialized object response', 'en');
+        $customQuestion->setQuestionType(CustomQuestion::CUSTOM_QUESTION_TYPE_SMALL_TEXT_FIELD);
+        $customQuestionId = Repo::customQuestion()->add($customQuestion);
+
+        $customQuestionResponseDAO = app(CustomQuestionResponseDAO::class);
+        $customQuestionResponse = $customQuestionResponseDAO->newDataObject();
+        $customQuestionResponse->setSubmissionId($this->submissionId);
+        $customQuestionResponse->setCustomQuestionId($customQuestionId);
+        $customQuestionResponse->setValue(serialize(new SerializedResponseGadget()));
+        $customQuestionResponse->setResponseType('string');
+        $customQuestionResponseDAO->insert($customQuestionResponse);
+        SerializedResponseGadget::$wokenUp = false;
+
+        $fetchedCustomQuestionResponse = $customQuestionResponseDAO->get($customQuestionResponse->getId());
+
+        self::assertFalse(SerializedResponseGadget::$wokenUp);
+        self::assertNotInstanceOf(SerializedResponseGadget::class, $fetchedCustomQuestionResponse->getValue());
+    }
 }
