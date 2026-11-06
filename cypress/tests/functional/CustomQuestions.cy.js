@@ -310,6 +310,36 @@ describe('Custom Quetions plugin tests', function () {
 			},
 		};
 
+		const smallTextQuestion = customQuestions.find((customQuestion) => customQuestion.type === '1');
+		cy
+			.get(`input[name^="customQuestion-${smallTextQuestion.id}"][id*="-control-en"]`)
+			.clear()
+			.type('<img src="x" onerror="window.customQuestionsXss = true">');
+		cy.get('.submissionWizard__footer button').contains('Continue').click();
+		cy.get('.submissionWizard__footer button').contains('Continue').click();
+		cy.get('.submissionWizard__footer button').contains('Continue').click();
+		cy.get('.submissionWizard__footer button').contains('Continue').click();
+		cy.contains('Make a Submission: Review');
+		cy
+			.get('h3')
+			.contains('Custom questions')
+			.parents('.submissionWizard__reviewPanel')
+			.find('h4')
+			.contains(smallTextQuestion.title)
+			.siblings('.submissionWizard__reviewPanel__item__value')
+			.find('img')
+			.should('exist')
+			.and('not.have.attr', 'onerror');
+		cy.window().then((win) => {
+			expect(win.customQuestionsXss).to.be.undefined;
+		});
+		cy
+			.get('h3')
+			.contains('Custom questions')
+			.siblings('.submissionWizard__reviewPanel__edit')
+			.contains('Edit')
+			.click();
+
 		customQuestions.forEach((customQuestion) => {
 			const customQuestionId = 'customQuestion-' + customQuestion.id;
 			answerQuestionByType[customQuestion.type]?.(customQuestionId, customQuestion);

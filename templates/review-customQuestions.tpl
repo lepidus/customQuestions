@@ -58,7 +58,7 @@
                     <div
                         v-if="response.responseType === 'string'"
                         class="submissionWizard__reviewPanel__item__value"
-                        v-html="localize(response.value)
+                        v-strip-unsafe-html="localize(response.value)
                             ? localize(response.value)
                             : '{translate key="common.noneProvided"}'"
                     ></div>
