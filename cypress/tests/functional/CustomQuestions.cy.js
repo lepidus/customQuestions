@@ -1,6 +1,7 @@
 describe('Custom Quetions plugin tests', function () {
 
 	let customQuestions;
+	let corinoSubmissionId;
 
 	before(function () {
 		customQuestions = [
@@ -48,6 +49,19 @@ describe('Custom Quetions plugin tests', function () {
 			},
 		];
 	});
+
+	const putCustomQuestionResponses = (submissionId, body) => {
+		cy.getCsrfToken();
+		return cy.get('@csrfToken').then((csrfToken) => {
+			return cy.request({
+				method: 'PUT',
+				url: `index.php/publicknowledge/api/v1/customQuestionResponses/${submissionId}`,
+				headers: {'X-Csrf-Token': csrfToken},
+				body: body,
+				failOnStatusCode: false,
+			});
+		});
+	};
 
 	const createCustomQuestion = (customQuestion) => {
 		customQuestion.description = customQuestion.description || '';
@@ -161,6 +175,10 @@ describe('Custom Quetions plugin tests', function () {
 		cy.contains('Begin Submission').click();
 
 		cy.contains('Make a Submission: Details');
+		cy.location('search').then((search) => {
+			corinoSubmissionId = Number(new URLSearchParams(search).get('id'));
+			expect(corinoSubmissionId).to.be.greaterThan(0);
+		});
 		cy.setTinyMceContent(
 			'titleAbstract-abstract-control-en',
 			'Checking required custom questions in submission wizard.'
@@ -292,6 +310,36 @@ describe('Custom Quetions plugin tests', function () {
 			},
 		};
 
+		const smallTextQuestion = customQuestions.find((customQuestion) => customQuestion.type === '1');
+		cy
+			.get(`input[name^="customQuestion-${smallTextQuestion.id}"][id*="-control-en"]`)
+			.clear()
+			.type('<img src="x" onerror="window.customQuestionsXss = true">');
+		cy.get('.submissionWizard__footer button').contains('Continue').click();
+		cy.get('.submissionWizard__footer button').contains('Continue').click();
+		cy.get('.submissionWizard__footer button').contains('Continue').click();
+		cy.get('.submissionWizard__footer button').contains('Continue').click();
+		cy.contains('Make a Submission: Review');
+		cy
+			.get('h3')
+			.contains('Custom questions')
+			.parents('.submissionWizard__reviewPanel')
+			.find('h4')
+			.contains(smallTextQuestion.title)
+			.siblings('.submissionWizard__reviewPanel__item__value')
+			.find('img')
+			.should('exist')
+			.and('not.have.attr', 'onerror');
+		cy.window().then((win) => {
+			expect(win.customQuestionsXss).to.be.undefined;
+		});
+		cy
+			.get('h3')
+			.contains('Custom questions')
+			.siblings('.submissionWizard__reviewPanel__edit')
+			.contains('Edit')
+			.click();
+
 		customQuestions.forEach((customQuestion) => {
 			const customQuestionId = 'customQuestion-' + customQuestion.id;
 			answerQuestionByType[customQuestion.type]?.(customQuestionId, customQuestion);
@@ -368,6 +416,29 @@ describe('Custom Quetions plugin tests', function () {
 			if (customQuestion.type === '6') {
 				cy.get(`select[id^="customQuestions-${customQuestionId}"] option:selected`).should('have.attr', 'label', customQuestion.response);
 			}
+		});
+	});
+
+	it('Denies the responses API to an author without access to the submission', function () {
+		const smallTextQuestion = customQuestions.find((customQuestion) => customQuestion.type === '1');
+		const fieldName = `customQuestion-${smallTextQuestion.id}`;
+
+		cy.login('ckwantes', null, 'publicknowledge');
+		putCustomQuestionResponses(corinoSubmissionId, {})
+			.its('status')
+			.should('eq', 403);
+		putCustomQuestionResponses(corinoSubmissionId, {[fieldName]: {en: 'Unauthorized response'}})
+			.its('status')
+			.should('eq', 403);
+		cy.logout();
+
+		cy.login('ccorino', null, 'publicknowledge');
+		putCustomQuestionResponses(corinoSubmissionId, {}).then((response) => {
+			expect(response.status).to.eq(200);
+			const storedResponse = response.body.find(
+				(customQuestionResponse) => customQuestionResponse.customQuestionId == smallTextQuestion.id
+			);
+			expect(storedResponse.value.en).to.eq(smallTextQuestion.response);
 		});
 	});
 });
