@@ -64,8 +64,9 @@ describe('Custom Questions submission wizard', function () {
 
 		const partialResponse = 'Partially completed custom questions.';
 		cy.intercept('POST', '**/customQuestionResponses/*').as('savePartialResponses');
+		const unsafeMarkup = '<img src="x" onerror="window.customQuestionsXss = true">';
 		cy.get(`input[name^="customQuestion-${questions.smallText.id}"][id*="-control-en"]`)
-			.type(partialResponse);
+			.type(`${partialResponse} ${unsafeMarkup}`);
 		cy.contains('.submissionWizard__footer button', 'Continue').click();
 		cy.wait('@savePartialResponses').its('response.statusCode').should('eq', 200);
 		cy.contains('Make a Submission: Upload Files').should('be.visible');
@@ -91,6 +92,9 @@ describe('Custom Questions submission wizard', function () {
 				.within(() => {
 					if (question.id === questions.smallText.id) {
 						cy.contains(partialResponse);
+						cy.get('.submissionWizard__reviewPanel__item__value img')
+							.should('exist')
+							.and('not.have.attr', 'onerror');
 						return;
 					}
 					cy.contains('.pkpNotification', 'This field is required.')
@@ -102,6 +106,9 @@ describe('Custom Questions submission wizard', function () {
 						.next('.submissionWizard__reviewPanel__item__header')
 						.should('exist');
 				});
+		});
+		cy.window().then((win) => {
+			expect(win.customQuestionsXss).to.be.undefined;
 		});
 		cy.contains('button', 'Submit').should('be.disabled');
 
