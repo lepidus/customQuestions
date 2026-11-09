@@ -78,7 +78,7 @@ class DAO extends EntityDAO
     {
         $customQuestionResponse = parent::fromRow($row);
         $value = @unserialize($row->response_value, ['allowed_classes' => false]);
-        if ($value) {
+        if ($value !== false || $row->response_value === serialize(false)) {
             $customQuestionResponse->setValue($value);
         }
 
