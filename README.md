@@ -6,7 +6,9 @@ A plugin to add custom questions to submission wizard
 
 The latest release of this plugin is compatible with the following PKP applications:
 
-* OJS and OPS 3.4.0
+* OJS and OPS 3.4.0-5 or later 3.4.0 releases
+
+Versions 3.4.0-0 to 3.4.0-4 are not supported: the submission wizard review uses the `v-strip-unsafe-html` directive, added to pkp-lib in 3.4.0-5.
 
 ## Installation
 
